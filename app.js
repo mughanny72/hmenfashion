@@ -1571,7 +1571,34 @@ function addLookBundle(type){
   // Start state
   setActive(0);
 })();
+(function bindSearchFocus(){
 
+  const searchInput = document.getElementById("searchInput");
+  const focusBtn = document.getElementById("btnSearchFocus");
+
+  if (focusBtn && searchInput) {
+    focusBtn.addEventListener("click", function(){
+      searchInput.focus();
+      searchInput.select();
+    });
+  }
+
+  window.addEventListener("keydown", function(e){
+    const key = (e.key || "").toLowerCase();
+    const isCmdK = (e.metaKey || e.ctrlKey) && key === "k";
+
+    if (!isCmdK) return;
+
+    // Don't steal shortcut if user already typing in input
+    const active = document.activeElement;
+    if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA")) return;
+
+    e.preventDefault();
+    searchInput?.focus();
+    searchInput?.select();
+  });
+
+})();
 /* =========================
    Lookbook "Shop This Look" buttons
 ========================= */

@@ -126,7 +126,15 @@ textarea{ resize: vertical; }
   display:block;           /* ✅ not flex when sidebar is fixed */
   min-height:100vh;
 }
+.search{
+  transition: box-shadow .2s ease, border-color .2s ease;
+}
 
+.search:focus{
+  outline: none;
+  border-color: rgba(231,195,106,.45);
+  box-shadow: 0 0 0 3px rgba(231,195,106,.25);
+}
 /* Sidebar stays fixed (FINAL) */
 .sidebar{
   width:260px;
