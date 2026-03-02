@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HMenFashion Member Area</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0b0c10;color:white;font-family:Arial">
+
+<div style="text-align:center;max-width:600px">
+  <h1>Member Access</h1>
+  <p id="statusText">Checking subscription...</p>
+  <button id="logoutBtn" style="display:none;padding:10px 20px;margin-top:20px;cursor:pointer">
+    Logout
+  </button>
+</div>
+
+<script>
+(async function(){
+  const statusEl = document.getElementById("statusText");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  // ✅ Use ONE key everywhere
+  const email = (localStorage.getItem("userEmail") || "").trim().toLowerCase();
+
+  // 1) no email saved -> go to pricing (or index)
+  if (!email) {
+    window.location.href = "/pricing.html";
+    return;
+  }
+
+  try {
+    // 2) call API
+    const r = await fetch(`/api/me?email=${encodeURIComponent(email)}`, { cache: "no-store" });
+    const j = await r.json();
+
+    // 3) API ok?
+    if (!j.ok) {
+      statusEl.textContent = "Subscription check failed. Please try again.";
+      return;
+    }
+
+    // 4) active/trialing allowed
+    if (!j.isActive) {
+      window.location.href = "/pricing.html";
+      return;
+    }
+
+    // ✅ allowed
+    statusEl.textContent = "Subscription active. Welcome to HMenFashion.";
+    logoutBtn.style.display = "inline-block";
+
+    logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem("userEmail");
+      window.location.href = "/index.html";
+    });
+
+  } catch (e) {
+    statusEl.textContent = "Server error. Please refresh.";
+  }
+})();
+</script>
+
+</body>
+</html>

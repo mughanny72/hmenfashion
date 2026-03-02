@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HMF — LOCAL TEST</title>
+  <meta name="description" content="Affordable luxury menswear—suits, smart casual, shoes, accessories. Smart value, sharp style." />
+  <meta name="theme-color" content="#0b0c10" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+  <div class="layout" id="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar" aria-label="Primary">
+      <div class="side-top">
+        <div class="brandbox">
+          <div class="logo" aria-hidden="true">H</div>
+          <div class="brandtext">
+            <div class="brand-name">H Men’s Fashion</div>
+            <div class="brand-tag">Affordable Luxury • Smart Value</div>
+          </div>
+        </div>
+
+        <button class="iconbtn side-collapse" id="btnCollapse" type="button" aria-label="Collapse sidebar" title="Collapse">
+          <!-- chevron-left -->
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+
+      <nav class="sidenav">
+        <a class="navlink active" href="#outfits">
+          <span class="navicon" aria-hidden="true">
+            <!-- sparkles -->
+            <svg viewBox="0 0 24 24"><path d="M12 2l1.2 4.3L17.5 8l-4.3 1.2L12 13.5l-1.2-4.3L6.5 8l4.3-1.7L12 2zM19 11l.8 2.9L23 15l-3.2.9L19 19l-.8-3.1L15 15l3.2-1.1L19 11zM4.5 13l.7 2.4L7.8 16l-2.6.6L4.5 19l-.7-2.4L1.2 16l2.6-.6L4.5 13z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="navtext">Outfits</span>
+        </a>
+
+        <a class="navlink" href="#suits">
+          <span class="navicon" aria-hidden="true">
+            <!-- briefcase -->
+            <svg viewBox="0 0 24 24"><path d="M9 6V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3 8h18v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 13h18" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          </span>
+          <span class="navtext">Suits</span>
+        </a>
+
+        <a class="navlink" href="#casual">
+          <span class="navicon" aria-hidden="true">
+            <!-- shirt -->
+            <svg viewBox="0 0 24 24"><path d="M8 4l4 3 4-3 4 3-2 4v13H6V11L4 7l4-3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="navtext">Smart Casual</span>
+        </a>
+
+        <a class="navlink" href="#shoes">
+          <span class="navicon" aria-hidden="true">
+            <!-- shoe (simple) -->
+            <svg viewBox="0 0 24 24"><path d="M3 15c4 0 6-4 7-6 1 2 3 4 6 4 2 0 3-1 5-1v5c0 2-2 3-4 3H5c-1 0-2-1-2-2v-3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="navtext">Shoes</span>
+        </a>
+
+        <a class="navlink" href="#accessories">
+          <span class="navicon" aria-hidden="true">
+            <!-- tag -->
+            <svg viewBox="0 0 24 24"><path d="M20 13l-7 7-10-10V3h7l10 10z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7 7h.01" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+          </span>
+          <span class="navtext">Accessories</span>
+        </a>
+
+        <div class="navsep"></div>
+
+        <a class="navlink" href="#cart">
+          <span class="navicon" aria-hidden="true">
+            <!-- cart -->
+            <svg viewBox="0 0 24 24"><path d="M6 6h15l-2 8H8L6 6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M6 6L5 3H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9 20h.01M18 20h.01" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+          </span>
+          <span class="navtext">Cart</span>
+          <span class="badge" id="cartCountBadge">0</span>
+        </a>
+
+        <a class="navlink" href="#footer">
+          <span class="navicon" aria-hidden="true">
+            <!-- info -->
+            <svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 10v7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 7h.01" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+          </span>
+          <span class="navtext">About / Contact</span>
+        </a>
+      </nav>
+
+      <div class="side-bottom">
+        <button class="btn ghost full" id="btnOpenMobileMenu" type="button">Menu</button>
+        <div class="muted tiny">Demo store • Cart saves automatically</div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main" id="main">
+      <header class="mainbar">
+        <button class="iconbtn" id="btnHamburger" type="button" aria-label="Open menu" title="Menu">
+          <!-- hamburger -->
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+
+<div class="searchwrap">
+  <input id="searchInput" class="search" placeholder="Search outfits (e.g., suit, loafers, shirt)..." />
+
+  <button id="btnSearchFocus" class="kbd icon-kbd" type="button" aria-label="Focus search">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="7"></circle>
+      <line x1="16.65" y1="16.65" x2="21" y2="21"></line>
+    </svg>
+  </button>
+</div>
+
+<div class="mainbar-actions">
+  <select id="categorySelect" class="select" aria-label="Category filter">
+    <option value="ALL">All</option>
+    <option value="SUITS">Suits</option>
+    <option value="CASUAL">Smart Casual</option>
+    <option value="SHOES">Shoes</option>
+    <option value="ACCESSORIES">Accessories</option>
+  </select>
+
+  <!-- ✅ NEW: Lookbook -->
+  <button class="btn ghost" id="btnGoLookbook" type="button" title="Lookbook (L)">
+    Lookbook
+  </button>
+
+  <!-- Existing -->
+  <button class="btn primary" id="btnScrollCart" type="button">View Cart</button>
+</div>
+      </header>
+<!-- ✅ LOOKBOOK (UPGRADED: full-screen + dots + arrows + autoplay-ready + accessibility) -->
+<section id="lookbook" class="lookbook" aria-label="Lookbook" tabindex="-1">
+
+  <!-- Top bar -->
+  <div class="look-top">
+    <div>
+      <div class="look-kicker">Lookbook Mode</div>
+      <h2 class="look-title">Curated outfits — cinematic view</h2>
+      <div class="look-sub">Use ◀ ▶ arrows, dots, or keyboard (← →). Press Esc to exit fullscreen (optional).</div>
+    </div>
+
+    <div class="look-actions">
+      <button class="btn ghost" id="lookPrev" type="button" aria-label="Previous look">◀</button>
+      <button class="btn ghost" id="lookNext" type="button" aria-label="Next look">▶</button>
+      <button class="btn ghost" id="lookAuto" type="button" aria-pressed="false" title="Auto slideshow">Auto</button>
+    </div>
+  </div>
+
+  <!-- Slides viewport -->
+  <div class="look-viewport" id="lookViewport">
+
+    <article class="look-slide is-active" data-look="business" data-index="0" role="group" aria-roledescription="slide" aria-label="Business Authority">
+      <div class="look-bg" aria-hidden="true"></div>
+
+      <div class="look-overlay">
+        <span class="look-pill">Signature Look</span>
+        <h3>Business Authority</h3>
+        <p>Sharp navy suit. Clean lines. Executive presence.</p>
+
+        <div class="look-cta">
+          <button class="btn primary look-add" data-bundle="business" type="button">
+            Shop This Look
+          </button>
+          <button class="btn ghost look-view" data-jump="SUIT_NAVY" type="button">
+            View Key Piece
+          </button>
+        </div>
+      </div>
+    </article>
+
+    <article class="look-slide" data-look="wedding" data-index="1" role="group" aria-roledescription="slide" aria-label="Wedding Elegance">
+      <div class="look-bg" aria-hidden="true"></div>
+
+      <div class="look-overlay">
+        <span class="look-pill">Signature Look</span>
+        <h3>Wedding Elegance</h3>
+        <p>Timeless formal style. Elevated confidence.</p>
+
+        <div class="look-cta">
+          <button class="btn primary look-add" data-bundle="wedding" type="button">
+            Shop This Look
+          </button>
+          <button class="btn ghost look-view" data-jump="TIE_SET" type="button">
+            View Key Piece
+          </button>
+        </div>
+      </div>
+    </article>
+
+    <article class="look-slide" data-look="casual" data-index="2" role="group" aria-roledescription="slide" aria-label="Smart Casual Weekend">
+      <div class="look-bg" aria-hidden="true"></div>
+
+      <div class="look-overlay">
+        <span class="look-pill">Signature Look</span>
+        <h3>Smart Casual Weekend</h3>
+        <p>Relaxed structure. Effortless refinement.</p>
+
+        <div class="look-cta">
+          <button class="btn primary look-add" data-bundle="casual" type="button">
+            Shop This Look
+          </button>
+          <button class="btn ghost look-view" data-jump="BLAZER_CHAR" type="button">
+            View Key Piece
+          </button>
+        </div>
+      </div>
+    </article>
+
+    <article class="look-slide" data-look="evening" data-index="3" role="group" aria-roledescription="slide" aria-label="Evening Confidence">
+      <div class="look-bg" aria-hidden="true"></div>
+
+      <div class="look-overlay">
+        <span class="look-pill">Signature Look</span>
+        <h3>Evening Confidence</h3>
+        <p>Dark tones. Bold presence. Modern edge.</p>
+
+        <div class="look-cta">
+          <button class="btn primary look-add" data-bundle="evening" type="button">
+            Shop This Look
+          </button>
+          <button class="btn ghost look-view" data-jump="BELT_BLACK" type="button">
+            View Key Piece
+          </button>
+        </div>
+      </div>
+    </article>
+
+  </div>
+
+  <!-- Progress dots -->
+  <div class="look-dots" role="tablist" aria-label="Lookbook navigation">
+    <button class="look-dot is-on" type="button" data-to="0" role="tab" aria-selected="true" aria-label="Go to Business Authority"></button>
+    <button class="look-dot" type="button" data-to="1" role="tab" aria-selected="false" aria-label="Go to Wedding Elegance"></button>
+    <button class="look-dot" type="button" data-to="2" role="tab" aria-selected="false" aria-label="Go to Smart Casual Weekend"></button>
+    <button class="look-dot" type="button" data-to="3" role="tab" aria-selected="false" aria-label="Go to Evening Confidence"></button>
+  </div>
+
+</section>
+      <!-- Outfits -->
+      <section class="section" id="outfits">
+        <div class="section-head">
+          <div>
+            <h1>Outfits</h1>
+            <p class="muted">Complete looks. Smart value. Built for confidence.</p>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+
+        <div class="grid products" id="productGrid" aria-live="polite"></div>
+      </section>
+
+      <!-- Category anchors (for sidebar links) -->
+      <div id="suits"></div>
+      <div id="casual"></div>
+      <div id="shoes"></div>
+      <div id="accessories"></div>
+<section id="membership" style="max-width:900px;margin:40px auto;padding:20px;border:1px solid #333;border-radius:16px;">
+  <h2 style="margin:0 0 10px 0;">Premium Membership</h2>
+  <p style="margin:0 0 16px 0;opacity:.85;">
+    Get monthly access to exclusive outfits, early releases, and member benefits.
+  </p>
+
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <input
+      id="memberEmail"
+      type="email"
+      placeholder="Email (optional)"
+      style="flex:1;min-width:240px;padding:12px 14px;border-radius:10px;border:1px solid #444;background:#111;color:#fff;"
+    />
+    <button
+      id="subscribeBtn"
+      style="padding:12px 18px;border-radius:10px;border:0;background:#caa24a;color:#111;font-weight:800;cursor:pointer;"
+    >
+      Subscribe — $19/mo
+    </button>
+  </div>
+
+  <div id="subscribeMsg" style="margin-top:12px;opacity:.85;"></div>
+</section>
+<a class="navlink" href="#membership">
+  <span class="navicon" aria-hidden="true">
+    <svg viewBox="0 0 24 24"><path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+  </span>
+  <span class="navtext">Membership</span>
+</a>
+      <!-- Cart -->
+      <section class="section alt" id="cart">
+        <div class="section-head">
+          <div>
+            <h2>Your Cart</h2>
+            <p class="muted">Adjust quantities, then checkout (next step: Stripe).</p>
+          </div>
+          <div class="cart-actions">
+            <button class="btn ghost" id="btnClearCart" type="button">Clear</button>
+            <button class="btn primary" id="btnCheckout" type="button">
+  Checkout Securely
+</button>
+          </div>
+        </div>
+
+        <div class="cartbox">
+          <div id="cartItems"></div>
+
+          <div class="cartfooter">
+            <div class="total">
+              <span class="muted">Total</span>
+              <strong id="cartTotal">$0.00</strong>
+            </div>
+            <div class="hint" id="cartHint"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="footer" id="footer">
+        <div class="footergrid">
+          <div class="footercard">
+            <div class="brand-name">H Men’s Fashion</div>
+            <div class="muted">Affordable Luxury • Smart Value</div>
+            <div class="muted tiny" style="margin-top:10px;">© <span id="year"></span> hmenfashion.com</div>
+          </div>
+
+          <div class="footercard" id="footer-about">
+            <div class="footertitle">About</div>
+            <p class="muted">
+              We focus on men’s essentials that look premium without the premium price.
+              Clean fit, easy matching, and confidence-first styling.
+            </p>
+            <div class="muted tiny">Future upgrade: outfit recommender + size guidance.</div>
+          </div>
+
+          <div class="footercard" id="footer-contact">
+            <div class="footertitle">Contact</div>
+            <form class="footerform" id="contactForm">
+              <input required name="name" placeholder="Name" />
+              <input required name="contact" placeholder="Phone / Email" />
+              <textarea name="msg" rows="3" placeholder="Message (size, budget, event...)"></textarea>
+              <button class="btn primary full" type="submit">Send</button>
+              <div class="hint" id="formHint"></div>
+            </form>
+          </div>
+
+          <div class="footercard">
+            <div class="footertitle">Policies</div>
+            <div class="footerlinks">
+              <button class="linkbtn" data-policy="shipping" type="button">Shipping</button>
+              <button class="linkbtn" data-policy="returns" type="button">Returns</button>
+              <button class="linkbtn" data-policy="privacy" type="button">Privacy</button>
+              <button class="linkbtn" data-policy="terms" type="button">Terms</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="footerbottom muted">Built for confidence. Priced for smart value.</div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Mobile overlay -->
+  <div class="overlay" id="overlay" hidden></div>
+
+  <!-- Product Quick View Modal -->
+  <div class="modal" id="productModal" role="dialog" aria-modal="true" aria-labelledby="pmTitle" hidden>
+    <div class="modalcard">
+      <button class="iconbtn modalclose" id="btnCloseModal" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+
+      <div class="modalgrid">
+        <div class="modalimg" id="pmImg" aria-hidden="true"></div>
+
+        <div class="modalcontent">
+          <div class="pillrow">
+            <span class="pill" id="pmCat">OUTFIT</span>
+            <span class="pill" id="pmTag">SMART VALUE</span>
+          </div>
+
+          <h3 id="pmTitle" style="margin:10px 0 6px;"></h3>
+          <div class="price big" id="pmPrice"></div>
+          <p class="muted" id="pmDesc" style="margin-top:10px;"></p>
+
+          <div class="formrow">
+            <label class="lbl">
+              Size
+              <select class="select" id="pmSize">
+                <option value="S">S</option>
+                <option value="M" selected>M</option>
+                <option value="L">L</option>
+                <option value="XL">XL</option>
+              </select>
+            </label>
+
+            <label class="lbl">
+              Qty
+              <div class="qty">
+                <button class="iconbtn" id="pmMinus" type="button" aria-label="Decrease quantity">−</button>
+                <input id="pmQty" value="1" inputmode="numeric" />
+                <button class="iconbtn" id="pmPlus" type="button" aria-label="Increase quantity">+</button>
+              </div>
+            </label>
+          </div>
+
+          <div class="modalactions">
+            <button class="btn primary" id="pmAdd" type="button">Add to Cart</button>
+            <button class="btn ghost" id="pmGoCart" type="button">Go to Cart</button>
+          </div>
+
+          <div class="hint" id="pmHint"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Policy Modal -->
+  <div class="modal" id="policyModal" role="dialog" aria-modal="true" aria-labelledby="polTitle" hidden>
+    <div class="modalcard">
+      <button class="iconbtn modalclose" id="btnClosePolicy" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <h3 id="polTitle" style="margin:0 0 8px;"></h3>
+      <div class="muted" id="polBody"></div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
