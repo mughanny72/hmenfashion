@@ -126,14 +126,42 @@ textarea{ resize: vertical; }
   display:block;           /* ✅ not flex when sidebar is fixed */
   min-height:100vh;
 }
+/* Premium Search Focus */
 .search{
-  transition: box-shadow .2s ease, border-color .2s ease;
+  transition:
+    box-shadow .25s cubic-bezier(.4,0,.2,1),
+    border-color .25s cubic-bezier(.4,0,.2,1),
+    background .25s ease;
 }
 
+/* Focus state */
 .search:focus{
   outline: none;
-  border-color: rgba(231,195,106,.45);
-  box-shadow: 0 0 0 3px rgba(231,195,106,.25);
+  border-color: rgba(231,195,106,.6);
+  background: rgba(0,0,0,.35);
+  box-shadow:
+    0 0 0 2px rgba(231,195,106,.35),
+    0 0 18px rgba(231,195,106,.18);
+  animation: searchGlow 2.4s ease-in-out infinite;
+}
+
+/* Subtle breathing glow */
+@keyframes searchGlow{
+  0%{
+    box-shadow:
+      0 0 0 2px rgba(231,195,106,.30),
+      0 0 14px rgba(231,195,106,.12);
+  }
+  50%{
+    box-shadow:
+      0 0 0 2px rgba(231,195,106,.45),
+      0 0 22px rgba(231,195,106,.25);
+  }
+  100%{
+    box-shadow:
+      0 0 0 2px rgba(231,195,106,.30),
+      0 0 14px rgba(231,195,106,.12);
+  }
 }
 /* Sidebar stays fixed (FINAL) */
 .sidebar{
