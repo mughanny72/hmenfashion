@@ -2233,52 +2233,80 @@ function _saveAnnouncements(){
 }
 
 function renderAnnouncements(){
-  const wrap = document.getElementById("announce");
-  const list = document.getElementById("announceList");
-  if (!wrap || !list) return;
+  const list = document.getElementById("splashMessages");
+  if (!list) return;
   list.innerHTML = "";
 
-  if (!ANNOUNCEMENTS.length){
-    wrap.hidden = true;
-    return;
-  }
-
-  let dismissed = false;
-  try { dismissed = localStorage.getItem(ANNOUNCE_DISMISS_KEY) === "1"; } catch(_) {}
+  if (!ANNOUNCEMENTS.length) return;
 
   ANNOUNCEMENTS.forEach(a => {
     const item = document.createElement("div");
-    item.className = "announce-item";
+    item.className = "splash-msg";
     item.innerHTML = `
-      <span class="announce-pill ${a.ghost ? 'ghost' : ''}">${escapeHtml(a.pill || "")}</span>
-      <div class="announce-text">
-        ${a.title ? `<strong>${escapeHtml(a.title)}</strong>` : ""}
-        ${escapeHtml(a.body || "")}
-      </div>
+      <div class="splash-msg-pill ${a.ghost ? 'ghost' : ''}">${escapeHtml(a.pill || "")}</div>
+      ${a.title ? `<div class="splash-msg-title">${escapeHtml(a.title)}</div>` : ""}
+      <div class="splash-msg-body">${escapeHtml(a.body || "")}</div>
     `;
     list.appendChild(item);
   });
-
-  wrap.hidden = false;
-  if (dismissed) wrap.classList.add("is-hidden");
-  else wrap.classList.remove("is-hidden");
 }
 
-(function initAnnounceBanner(){
+/* ===== Splash takeover (Coming Soon) ===== */
+const SPLASH_PREVIEW_KEY = "HMEN_SPLASH_PREVIEW"; // sessionStorage flag for admin preview
+
+function _splashShouldShow(){
+  // Admin previewing the site? Hide splash for them.
+  try { if (sessionStorage.getItem(SPLASH_PREVIEW_KEY) === "1") return false; } catch(_) {}
+  return true; // visitors always see splash; admin sees it too unless they hit "Preview Site"
+}
+
+function applySplashState(){
+  const splash = document.getElementById("splash");
+  if (!splash) return;
+  const show = _splashShouldShow();
+  splash.classList.toggle("is-hidden", !show);
+  document.body.classList.toggle("splash-on", show);
+  // mark admin-mode for showing the Preview button
+  const isAdmin = (typeof _adminIsAuthed === "function" && _adminIsAuthed());
+  splash.classList.toggle("is-admin", isAdmin);
+}
+
+(function initSplash(){
   function init(){
+    // year
+    const y = document.getElementById("splashYear");
+    if (y) y.textContent = String(new Date().getFullYear());
     renderAnnouncements();
-    const btn = document.getElementById("announceClose");
-    btn?.addEventListener("click", () => {
-      const wrap = document.getElementById("announce");
-      wrap?.classList.add("is-hidden");
-      try { localStorage.setItem(ANNOUNCE_DISMISS_KEY, "1"); } catch(_) {}
+    applySplashState();
+
+    document.getElementById("splashAdminBtn")?.addEventListener("click", () => {
+      if (typeof _adminLoginOpen === "function") _adminLoginOpen();
     });
+
+    document.getElementById("splashPreviewBtn")?.addEventListener("click", () => {
+      try { sessionStorage.setItem(SPLASH_PREVIEW_KEY, "1"); } catch(_) {}
+      applySplashState();
+    });
+
+    // Re-evaluate when admin auth changes (poll lightly)
+    setInterval(applySplashState, 1000);
   }
   if (document.readyState === "loading"){
     document.addEventListener("DOMContentLoaded", init, { once: true });
   } else {
     init();
   }
+})();
+
+// Reset preview on logout so admin sees splash again next session
+(function patchLogoutForSplash(){
+  if (typeof _adminLogout !== "function") return;
+  const orig = _adminLogout;
+  window._adminLogout = function(){
+    try { sessionStorage.removeItem(SPLASH_PREVIEW_KEY); } catch(_) {}
+    orig.apply(this, arguments);
+    applySplashState();
+  };
 })();
 
 /* ========== Admin: Announcements Manager ========== */

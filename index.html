@@ -10,6 +10,30 @@
 </head>
 
 <body>
+
+  <!-- ✅ FULL-SCREEN COMING-SOON SPLASH (visitors see this until admin opens the site) -->
+  <div id="splash" class="splash" aria-label="H Men's Fashion — Coming Soon">
+    <div class="splash-bg" aria-hidden="true"></div>
+    <div class="splash-particles" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <div class="splash-card">
+      <img src="./images/logo-hmf-gold.png" alt="H Men's Fashion" class="splash-logo" />
+      <div class="splash-brand">H MEN&rsquo;S FASHION</div>
+      <div class="splash-tag">Affordable Luxury &middot; Smart Style</div>
+      <div class="splash-divider" aria-hidden="true"></div>
+
+      <div id="splashMessages" class="splash-messages"></div>
+
+      <div class="splash-foot muted">&copy; <span id="splashYear"></span> hmenfashion.com</div>
+    </div>
+
+    <button class="splash-admin-btn" id="splashAdminBtn" type="button">Admin</button>
+    <button class="splash-preview-btn" id="splashPreviewBtn" type="button">Preview Site</button>
+  </div>
+
   <div class="layout" id="layout">
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar" aria-label="Primary">
@@ -134,11 +158,6 @@
 </div>
       </header>
 
-      <!-- ✅ ANNOUNCEMENT BANNER (edited from Admin Panel) -->
-      <section class="announce" id="announce" aria-label="Announcements" hidden>
-        <button class="announce-close" id="announceClose" type="button" aria-label="Dismiss announcements">×</button>
-        <div id="announceList"></div>
-      </section>
 
 <!-- ✅ LOOKBOOK (UPGRADED: full-screen + dots + arrows + autoplay-ready + accessibility) -->
 <section id="lookbook" class="lookbook" aria-label="Lookbook" tabindex="-1">
