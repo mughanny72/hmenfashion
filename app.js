@@ -2208,3 +2208,271 @@ _adminOpen = function gatedAdminOpen(){
     document.addEventListener("DOMContentLoaded", tryInject, { once: true });
   }
 })();
+
+/* =========================================================================
+   ANNOUNCEMENTS — editable from Admin Panel, dismissible by visitors
+========================================================================= */
+const ANNOUNCE_LS_KEY = "HMEN_ANNOUNCEMENTS_V1";
+const ANNOUNCE_DISMISS_KEY = "HMEN_ANNOUNCE_DISMISSED_V1";
+
+let ANNOUNCEMENTS = [
+  { id: "ann_store",   pill: "Opening Soon", title: "Our new store is opening soon —", body: "H Men's Fashion · Westmorland Mall · Greensburge PA", ghost: false },
+  { id: "ann_website", pill: "Heads Up",     title: "Our website is coming soon.",     body: "Stay tuned.", ghost: true }
+];
+
+(function loadAnnouncements(){
+  try {
+    const raw = localStorage.getItem(ANNOUNCE_LS_KEY);
+    if (!raw) return;
+    const arr = JSON.parse(raw);
+    if (Array.isArray(arr)) ANNOUNCEMENTS = arr;
+  } catch(_) {}
+})();
+function _saveAnnouncements(){
+  try { localStorage.setItem(ANNOUNCE_LS_KEY, JSON.stringify(ANNOUNCEMENTS)); } catch(_) {}
+}
+
+function renderAnnouncements(){
+  const wrap = document.getElementById("announce");
+  const list = document.getElementById("announceList");
+  if (!wrap || !list) return;
+  list.innerHTML = "";
+
+  if (!ANNOUNCEMENTS.length){
+    wrap.hidden = true;
+    return;
+  }
+
+  let dismissed = false;
+  try { dismissed = localStorage.getItem(ANNOUNCE_DISMISS_KEY) === "1"; } catch(_) {}
+
+  ANNOUNCEMENTS.forEach(a => {
+    const item = document.createElement("div");
+    item.className = "announce-item";
+    item.innerHTML = `
+      <span class="announce-pill ${a.ghost ? 'ghost' : ''}">${escapeHtml(a.pill || "")}</span>
+      <div class="announce-text">
+        ${a.title ? `<strong>${escapeHtml(a.title)}</strong>` : ""}
+        ${escapeHtml(a.body || "")}
+      </div>
+    `;
+    list.appendChild(item);
+  });
+
+  wrap.hidden = false;
+  if (dismissed) wrap.classList.add("is-hidden");
+  else wrap.classList.remove("is-hidden");
+}
+
+(function initAnnounceBanner(){
+  function init(){
+    renderAnnouncements();
+    const btn = document.getElementById("announceClose");
+    btn?.addEventListener("click", () => {
+      const wrap = document.getElementById("announce");
+      wrap?.classList.add("is-hidden");
+      try { localStorage.setItem(ANNOUNCE_DISMISS_KEY, "1"); } catch(_) {}
+    });
+  }
+  if (document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", init, { once: true });
+  } else {
+    init();
+  }
+})();
+
+/* ========== Admin: Announcements Manager ========== */
+function _annAdminEnsureModal(){
+  if (document.getElementById("annAdminModal")) return;
+  const m = document.createElement("div");
+  m.className = "modal";
+  m.id = "annAdminModal";
+  m.hidden = true;
+  m.style.display = "none";
+  m.setAttribute("role", "dialog");
+  m.setAttribute("aria-modal", "true");
+  m.innerHTML = `
+    <div class="modalcard admin-card">
+      <button class="iconbtn modalclose" id="btnCloseAnnAdmin" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <div class="admin-head">
+        <div>
+          <h3 style="margin:0 0 4px;">Announcements</h3>
+          <div class="muted tiny">Add, edit, and delete the banner messages at the top of the site.</div>
+        </div>
+      </div>
+
+      <div id="annAdminList" class="admin-list"></div>
+
+      <form id="annAdminForm" class="admin-form" style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;">
+        <input type="hidden" id="annOrigId" />
+        <div class="admin-grid3">
+          <label class="admin-lbl">Pill (short label)
+            <input id="annPill" required placeholder="Opening Soon" />
+          </label>
+          <label class="admin-lbl">Title (bold)
+            <input id="annTitle" placeholder="Our new store is opening soon —" />
+          </label>
+          <label class="admin-lbl">Style
+            <select id="annGhost" class="select">
+              <option value="0">Solid gold</option>
+              <option value="1">Outline (ghost)</option>
+            </select>
+          </label>
+        </div>
+        <label class="admin-lbl">Body / details
+          <textarea id="annBody" rows="2" required placeholder="H Men's Fashion · Westmorland Mall · Greensburge PA"></textarea>
+        </label>
+        <div class="admin-actions">
+          <button type="submit" class="btn primary">Save Message</button>
+          <button type="button" class="btn ghost" id="annClear">Clear Form</button>
+          <button type="button" class="btn ghost" id="annResetDismiss">Re-show banner for visitors</button>
+          <span class="muted tiny" id="annHint" style="margin-left:auto"></span>
+        </div>
+      </form>
+    </div>
+  `;
+  document.body.appendChild(m);
+
+  m.querySelector("#btnCloseAnnAdmin").addEventListener("click", _annAdminClose);
+  m.querySelector("#annAdminForm").addEventListener("submit", _annAdminSubmit);
+  m.querySelector("#annClear").addEventListener("click", _annAdminClearForm);
+  m.querySelector("#annResetDismiss").addEventListener("click", () => {
+    try { localStorage.removeItem(ANNOUNCE_DISMISS_KEY); } catch(_) {}
+    renderAnnouncements();
+    const h = document.getElementById("annHint"); if (h) h.textContent = "Banner will show again for everyone.";
+  });
+}
+
+function _annAdminOpen(){
+  if (typeof _adminIsAuthed === "function" && !_adminIsAuthed()){
+    if (typeof _adminLoginOpen === "function") _adminLoginOpen();
+    return;
+  }
+  _annAdminEnsureModal();
+  _annAdminRenderList();
+  _annAdminClearForm();
+  try { hideAllModals(); } catch(_) {}
+  const m = document.getElementById("annAdminModal");
+  m.hidden = false;
+  m.style.display = "grid";
+  try { showOverlay(true); } catch(_) {}
+}
+function _annAdminClose(){
+  const m = document.getElementById("annAdminModal");
+  if (!m) return;
+  m.hidden = true;
+  m.style.display = "none";
+  try { showOverlay(false); } catch(_) {}
+}
+
+function _annAdminRenderList(){
+  const list = document.getElementById("annAdminList");
+  if (!list) return;
+  list.innerHTML = "";
+  if (!ANNOUNCEMENTS.length){
+    list.innerHTML = `<div class="muted" style="padding:14px">No messages yet. Add one below.</div>`;
+    return;
+  }
+  ANNOUNCEMENTS.forEach((a) => {
+    const row = document.createElement("div");
+    row.className = "admin-row-item";
+    row.innerHTML = `
+      <div class="admin-thumb" style="display:flex;align-items:center;justify-content:center;background:rgba(231,195,106,.12);color:#e7c36a;font-weight:800;font-size:11px;padding:6px;text-align:center;">${escapeHtml(a.pill || "")}</div>
+      <div class="admin-info">
+        <div class="admin-row-title">${escapeHtml(a.title || "(no title)")}</div>
+        <div class="muted tiny">${escapeHtml(a.body || "")}</div>
+      </div>
+      <div class="admin-rowbtns">
+        <button class="btn ghost" data-act="edit" type="button">Edit</button>
+        <button class="btn admin-del" data-act="del" type="button">Delete</button>
+      </div>
+    `;
+    row.querySelector('[data-act="edit"]').addEventListener("click", () => _annAdminEdit(a.id));
+    row.querySelector('[data-act="del"]').addEventListener("click", () => _annAdminDelete(a.id));
+    list.appendChild(row);
+  });
+}
+
+function _annAdminEdit(id){
+  const a = ANNOUNCEMENTS.find(x => x.id === id);
+  if (!a) return;
+  document.getElementById("annOrigId").value = a.id;
+  document.getElementById("annPill").value = a.pill || "";
+  document.getElementById("annTitle").value = a.title || "";
+  document.getElementById("annBody").value = a.body || "";
+  document.getElementById("annGhost").value = a.ghost ? "1" : "0";
+  document.getElementById("annHint").textContent = "Editing message — make changes and click Save.";
+}
+function _annAdminClearForm(){
+  document.getElementById("annOrigId").value = "";
+  document.getElementById("annPill").value = "";
+  document.getElementById("annTitle").value = "";
+  document.getElementById("annBody").value = "";
+  document.getElementById("annGhost").value = "0";
+  document.getElementById("annHint").textContent = "";
+}
+function _annAdminDelete(id){
+  if (!confirm("Delete this message?")) return;
+  const idx = ANNOUNCEMENTS.findIndex(a => a.id === id);
+  if (idx < 0) return;
+  ANNOUNCEMENTS.splice(idx, 1);
+  _saveAnnouncements();
+  _annAdminRenderList();
+  renderAnnouncements();
+}
+function _annAdminSubmit(e){
+  e.preventDefault();
+  const orig = document.getElementById("annOrigId").value.trim();
+  const data = {
+    id: orig || ("ann_" + Math.random().toString(36).slice(2, 8)),
+    pill: document.getElementById("annPill").value.trim(),
+    title: document.getElementById("annTitle").value.trim(),
+    body: document.getElementById("annBody").value.trim(),
+    ghost: document.getElementById("annGhost").value === "1"
+  };
+  const hint = document.getElementById("annHint");
+  if (orig){
+    const idx = ANNOUNCEMENTS.findIndex(a => a.id === orig);
+    if (idx >= 0) ANNOUNCEMENTS[idx] = data;
+    else ANNOUNCEMENTS.push(data);
+  } else {
+    ANNOUNCEMENTS.push(data);
+  }
+  _saveAnnouncements();
+  _annAdminRenderList();
+  renderAnnouncements();
+  _annAdminClearForm();
+  // Re-show banner for everyone after edits
+  try { localStorage.removeItem(ANNOUNCE_DISMISS_KEY); } catch(_) {}
+  if (hint) hint.textContent = orig ? "Saved." : "Message added.";
+}
+
+// Inject "Announcements" button. Visible to all; clicking gates by admin auth.
+(function _injectAnnButton(){
+  function tryInject(){
+    const slot = document.querySelector(".side-bottom");
+    if (!slot) return false;
+    if (document.getElementById("btnOpenAnn")) return true;
+    const btn = document.createElement("button");
+    btn.id = "btnOpenAnn";
+    btn.type = "button";
+    btn.className = "btn ghost full";
+    btn.textContent = "Announcements";
+    btn.style.marginBottom = "8px";
+    btn.addEventListener("click", _annAdminOpen);
+    slot.insertBefore(btn, slot.firstChild);
+
+    // Toggle visibility based on admin auth (poll lightly — covers login/logout)
+    function refreshVis(){
+      btn.style.display = (typeof _adminIsAuthed === "function" && _adminIsAuthed()) ? "" : "none";
+    }
+    refreshVis();
+    setInterval(refreshVis, 1000);
+    return true;
+  }
+  if (!tryInject()){
+    document.addEventListener("DOMContentLoaded", tryInject, { once: true });
+  }
+})();
