@@ -2212,11 +2212,11 @@ _adminOpen = function gatedAdminOpen(){
 /* =========================================================================
    ANNOUNCEMENTS — editable from Admin Panel, dismissible by visitors
 ========================================================================= */
-const ANNOUNCE_LS_KEY = "HMEN_ANNOUNCEMENTS_V1";
-const ANNOUNCE_DISMISS_KEY = "HMEN_ANNOUNCE_DISMISSED_V1";
+const ANNOUNCE_LS_KEY = "HMEN_ANNOUNCEMENTS_V2";
+const ANNOUNCE_DISMISS_KEY = "HMEN_ANNOUNCE_DISMISSED_V2";
 
 let ANNOUNCEMENTS = [
-  { id: "ann_store",   pill: "Opening Soon", title: "Our new store is opening soon —", body: "H Men's Fashion · Westmorland Mall · Greensburge PA", ghost: false },
+  { id: "ann_store",   pill: "Opening Soon", title: "Our new store is opening soon —", body: "H Men's Fashion · Westmoreland Mall · Greensburg, PA", ghost: false },
   { id: "ann_website", pill: "Heads Up",     title: "Our website is coming soon.",     body: "Stay tuned.", ghost: true }
 ];
 

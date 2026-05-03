@@ -545,14 +545,14 @@ textarea{ resize:vertical; }
 .overlay{
   position:fixed; inset:0;
   background: rgba(0,0,0,.55);
-  z-index:60;
+  z-index:9500;
 }
 
 .modal{
   position:fixed; inset:0;
   display:grid;
   place-items:center;
-  z-index:70;
+  z-index:9600;
   padding:16px;
 }
 .modalcard{
