@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>H Men's Fashion — Admin</title>
+<style>
+:root{
+  --bg:#07080b;--panel:#11131b;--card:#151823;--gold:#d4af52;--gold2:#f0d27a;
+  --text:#fff;--muted:#c9c3b0;--line:rgba(255,255,255,.13);--danger:#ff6b6b;--ok:#48d17a
+}
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:Inter,Arial,sans-serif;
+  background:radial-gradient(circle at 15% 8%,rgba(212,175,82,.16),transparent 30%),#07080b;
+  color:#fff
+}
+a{text-decoration:none;color:inherit}
+button,input,textarea,select{font-family:inherit}
+.wrap{max-width:1400px;margin:auto;padding:22px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 0 22px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.brand{display:flex;gap:14px;align-items:center}
+.logo{width:78px;height:56px;object-fit:contain;background:#050505;border:1px solid rgba(212,175,82,.35);border-radius:16px}
+h1{margin:0;font-size:28px}.sub,.note{color:var(--muted);line-height:1.5}
+.btn{border:1px solid var(--line);background:rgba(255,255,255,.05);color:#fff;border-radius:14px;padding:12px 16px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{border-color:rgba(212,175,82,.45)}.btn.gold{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#111}.btn.green{border-color:rgba(72,209,122,.45);color:#65ef9a}.btn.red{border-color:rgba(255,107,107,.45);color:#ff8585}
+.grid{display:grid;grid-template-columns:minmax(420px,610px) 1fr;gap:18px;align-items:start}
+.card{background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.018));border:1px solid var(--line);border-radius:24px;padding:18px;box-shadow:0 18px 60px rgba(0,0,0,.25)}
+.card h2{margin:0 0 12px;font-size:28px}
+label{display:block;font-size:13px;font-weight:900;margin:12px 0 7px;color:#eee}
+input,textarea,select{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(--line);background:#090b11;color:#fff;outline:none;font-size:15px}
+textarea{min-height:92px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.group{border:1px solid var(--line);border-radius:18px;padding:12px;margin-top:12px;background:rgba(0,0,0,.18)}
+.group-title{font-weight:950;margin-bottom:8px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{border:1px solid rgba(255,255,255,.16);background:#0a0c13;color:#fff;border-radius:999px;padding:9px 12px;font-weight:900;cursor:pointer;font-size:13px}
+.chip.on{background:rgba(212,175,82,.20);border-color:rgba(212,175,82,.65);color:#fff2bd}.chip.small{padding:7px 10px;font-size:12px}
+.selected{color:var(--muted);font-size:13px;margin-top:10px;line-height:1.5}
+.preview{min-height:220px;border:1px dashed rgba(255,255,255,.16);border-radius:18px;background:#050609;display:grid;place-items:center;overflow:hidden;margin-top:12px;color:#ff7474;text-align:center;padding:12px}
+.preview img{width:100%;height:100%;max-height:360px;object-fit:contain;display:block}
+.products{display:grid;gap:12px}.item{display:grid;grid-template-columns:130px 1fr;gap:14px;border:1px solid var(--line);border-radius:20px;padding:12px;background:rgba(255,255,255,.035)}
+.item img{width:130px;height:130px;object-fit:contain;background:#050609;border-radius:14px;border:1px solid rgba(255,255,255,.08)}
+.item h3{margin:0 0 4px;font-size:20px}.item p{margin:4px 0;color:var(--muted);line-height:1.35}.meta{font-size:13px;color:#e8d58e;line-height:1.45}.item-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.status{font-weight:900;margin-top:10px;color:var(--ok)}.status.bad{color:var(--danger)}
+.variant-row{display:grid;grid-template-columns:1fr 1.5fr auto;gap:8px;align-items:center;margin:8px 0;padding:8px;border:1px solid rgba(255,255,255,.10);border-radius:16px;background:rgba(255,255,255,.035)}
+.variant-preview{width:64px;height:64px;border-radius:12px;background:#050609;border:1px solid rgba(255,255,255,.12);object-fit:contain}
+.variant-list{display:grid;gap:8px;margin-top:8px}
+.variant-mini{display:grid;grid-template-columns:64px 1fr auto;gap:10px;align-items:center;padding:8px;border:1px solid rgba(255,255,255,.10);border-radius:16px;background:rgba(0,0,0,.18)}
+@media(max-width:980px){.grid{grid-template-columns:1fr}.row,.row3,.variant-row{grid-template-columns:1fr}.item{grid-template-columns:100px 1fr}.item img{width:100px;height:100px}}
+
+.variant-mini .meta{
+  max-width:100% !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+  display:block !important;
+}
+.variant-mini{
+  grid-template-columns:64px minmax(0,1fr) auto !important;
+}
+.variant-mini > div{
+  min-width:0 !important;
+}
+.path-short{
+  max-width:100% !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+  display:block !important;
+}
+.clear-row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">
+      <img class="logo" src="./images/logo-hmf-gold.png" alt="H Men's Fashion"/>
+      <div>
+        <h1>H Men's Fashion — Admin</h1>
+        <div class="sub">Professional product setup: one style can have many color variants, and every color can have its own picture.</div>
+      </div>
+    </div>
+    <div class="actions">
+      <a class="btn gold" href="./index.html" target="_blank">Open Website</a>
+      <button class="btn gold" id="btnImport">Import Backup File</button>
+      <button class="btn" id="btnPasteImport">Paste Backup</button>
+      <button class="btn" id="btnExport">Export Backup</button>
+      <button class="btn red" id="btnClearAll">Clear All</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <h2 id="formTitle">Add Product</h2>
+      <div class="note">
+        Use <b>Color Variants</b> for suits, shirts, pants, shoes, and T-shirts. Example: same style 2159 with Beige image, Olive image, Mint image.
+      </div>
+      <input id="editId" type="hidden"/>
+
+      <div class="row">
+        <div>
+          <label>Product Mode</label>
+          <select id="productMode">
+            <option value="outfit">Complete Outfit</option>
+            <option value="single">Single Item</option>
+          </select>
+        </div>
+        <div>
+          <label>Item Type</label>
+          <select id="itemType">
+            <option>Suit</option><option>Shirt</option><option>T-Shirt</option><option>Pants</option><option>Shoes</option><option>Jacket</option><option>Accessories</option><option>Tux</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Product / Outfit Name</label>
+      <input id="name" placeholder="Slim Suit 2Pcs"/>
+
+      <label>Description</label>
+      <textarea id="description" placeholder="Slim Suit 2Pcs, premium look, smart value"></textarea>
+
+      <div class="row3">
+        <div><label>Price</label><input id="price" type="number" min="0" step="0.01" placeholder="219.99"/></div>
+        <div><label>Style Number</label><input id="styleNumber" placeholder="2159"/></div>
+        <div><label>Category</label><input id="category" placeholder="Suits"/></div>
+      </div>
+
+      <div id="groups"></div>
+
+      <div class="group">
+        <div class="group-title">Color Variants — professional style/colors</div>
+        <div class="note">Add every color for the same style here. Each color can have a different image.</div>
+        <div class="variant-row">
+          <input id="variantColor" placeholder="Color name, e.g. Beige"/>
+          <input id="variantImage" placeholder="Image file, e.g. 2159-beige.jpg"/>
+          <button class="btn gold" id="btnAddVariant" type="button">Add Color</button>
+        </div>
+        <div class="row">
+          <button class="btn" id="btnPreviewVariantImage" type="button">Preview Typed Image</button>
+          <input id="variantFile" type="file" accept="image/*"/>
+        </div>
+        <div class="preview" id="variantPreview">No color image preview yet.</div>
+        <div class="clear-row">
+          <button class="btn red" id="btnClearVariantInputs" type="button">Clear Color Image Boxes</button>
+          <button class="btn red" id="btnClearAllVariants" type="button">Delete All Color Variants</button>
+        </div>
+        <div class="variant-list" id="variantList"></div>
+      </div>
+
+      <label>Fallback Picture file name / path</label>
+      <div class="row">
+        <input id="image" placeholder="Optional fallback image if no color variant is selected"/>
+        <button class="btn" id="btnPreview" type="button">Preview Fallback</button>
+      </div>
+      <div class="clear-row">
+        <button class="btn red" id="btnClearFallbackImage" type="button">Clear Fallback Image</button>
+      </div>
+      <div class="note" style="margin-top:8px">Best image names: <b>2159-beige.jpg</b>, <b>2159-olive.jpg</b>. Put photos inside <b>images/</b>.</div>
+
+      <label>Or choose fallback picture file</label>
+      <input id="fileImage" type="file" accept="image/*"/>
+      <div class="preview" id="preview">No fallback image preview yet.</div>
+
+      <div class="actions">
+        <button class="btn gold" id="btnSave" type="button">Add Product</button>
+        <button class="btn" id="btnReset" type="button">Reset Form</button>
+      </div>
+      <div class="status" id="status"></div>
+    </section>
+
+    <section class="card">
+      <h2>Current Products</h2>
+      <div class="note">Edit changes any field. Duplicate copies the full style with all variants. Export Backup saves all products/outfits.</div>
+      <div class="actions">
+        <button class="btn" id="btnReload">Reload</button>
+        <button class="btn green" id="btnExport2">Export Backup</button>
+      </div>
+      <div id="count" class="note"></div>
+      <div class="products" id="productList"></div>
+    </section>
+  </div>
+</div>
+
+<script>
+const STORE_KEY="HMF_ADMIN_PRODUCTS",BACKUP_NAME="hmf-products-backup.json";
+const DEFAULTS={
+  parts:["Jacket/Suit","Shirt","T-Shirt","Pants","Shoes","Tie","Belt","Bowtie","Vest","One Size"],
+  suitSizes:["34S","36S","36R","38S","38R","38L","40S","40R","40L","42S","42R","42L","44S","44R","44L","46S","46R","46L","48S","48R","48L","50R","50L","52R","52L","54R","54L","56R","56L","58R","58L","60R","60L","62R","62L","64R","64L","66R","66L"],
+  alphaSuit:["XS","S","M","L","XL","2XL","3XL","4XL","5XL","6XL"],
+  shirtSizes:["14.5/32","15.5/32","15.5/34","16.5/32","16.5/34","16.5/36","17.5/32","17.5/34","17.5/36","18.5/32","18.5/34","18.5/36","19/34","20/34","22/36","24/36"],
+  alphaShirt:["XS","S","M","L","XL","XXL","2XL","3XL","4XL","5XL","6XL"],
+  pantsSizes:Array.from({length:17},(_,i)=>String(28+i*2)),
+  shoeSizes:["7","7.5","8","8.5","9","9.5","10","10.5","11","11.5","12","13","14"],
+  fits:["Slim Fit","Modern Fit","Classic Fit","Regular Fit","Relaxed Fit","Skinny Fit","Athletic Fit","Big & Tall","Slim-Straight","One Size"]
+};
+const groupLabels={parts:"Parts Included",suitSizes:"Jacket / Suit Sizes",shirtSizes:"Shirt / T-Shirt Sizes",pantsSizes:"Pants Sizes",shoeSizes:"Shoe Sizes",fits:"Fit Type"};
+const state={parts:[],suitSizes:[],shirtSizes:[],pantsSizes:[],shoeSizes:[],fits:[]};
+let variants=[];
+
+function esc(v){return String(v??"").replace(/[&<>'"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[ch]))}
+function money(n){return "$"+Number(n||0).toFixed(2)}
+function uid(){return "hmf_"+Date.now()+"_"+Math.random().toString(16).slice(2)}
+function getProducts(){try{return JSON.parse(localStorage.getItem(STORE_KEY)||"[]")||[]}catch{return[]}}
+function saveProducts(p){localStorage.setItem(STORE_KEY,JSON.stringify(p))}
+function normImg(v){v=String(v||"").trim();if(!v)return"";if(v.startsWith("data:")||v.startsWith("http")||v.startsWith("./images/")||v.startsWith("images/"))return v;return"./images/"+v}
+function cleanImg(v){return String(v||"").replace("./images/","")}
+function mainImage(p){return p.image||(p.variants&&p.variants[0]&&p.variants[0].image)||"./images/logo-hmf-gold.png"}
+function normalizeVariants(vs, fallbackImage="", oldColors=[]){
+  let out=[];
+  if(Array.isArray(vs) && vs.length){
+    out = vs.map(v=>({color:String(v.color||"").trim(), image:normImg(v.image||fallbackImage)})).filter(v=>v.color||v.image);
+  }else if(Array.isArray(oldColors) && oldColors.length){
+    out = oldColors.map(c=>({color:String(c||"").trim(), image:normImg(fallbackImage)})).filter(v=>v.color);
+  }
+  return out;
+}
+function colorsFromVariants(vs){return (vs||[]).map(v=>v.color).filter(Boolean)}
+
+function makeGroups(){
+  const g=document.getElementById("groups");
+  g.innerHTML=Object.keys(state).map(k=>`<div class="group"><div class="group-title">${groupLabels[k]}<span>${buttonsFor(k)}</span></div><div class="chips" id="${k}Chips"></div>${k!=="parts"?`<div class="row" style="margin-top:10px"><input id="custom_${k}" placeholder="Custom ${groupLabels[k]}"><button class="btn" type="button" data-add-custom="custom_${k}:${k}">Add Custom</button></div>`:""}<div class="selected" id="${k}Selected">Nothing selected.</div></div>`).join("");
+}
+function buttonsFor(k){
+  if(k==="parts")return `<button class="btn chip small red" type="button" data-clear="${k}">Clear</button>`;
+  if(k==="suitSizes")return `<button class="btn chip small" data-load="suit">Load Suit</button><button class="btn chip small" data-load="alphaSuit">XS-6XL</button><button class="btn chip small red" data-clear="${k}">Clear</button>`;
+  if(k==="shirtSizes")return `<button class="btn chip small" data-load="shirt">Dress Shirt</button><button class="btn chip small" data-load="alphaShirt">XS-6XL</button><button class="btn chip small red" data-clear="${k}">Clear</button>`;
+  if(k==="pantsSizes")return `<button class="btn chip small" data-load="pants">28-60</button><button class="btn chip small red" data-clear="${k}">Clear</button>`;
+  if(k==="shoeSizes")return `<button class="btn chip small" data-load="shoe">7-14</button><button class="btn chip small red" data-clear="${k}">Clear</button>`;
+  if(k==="fits")return `<button class="btn chip small" data-load="fits">Load Fits</button><button class="btn chip small red" data-clear="${k}">Clear</button>`;
+  return "";
+}
+function optionsFor(k){if(k==="suitSizes")return[...DEFAULTS.suitSizes,...DEFAULTS.alphaSuit];if(k==="shirtSizes")return[...DEFAULTS.shirtSizes,...DEFAULTS.alphaShirt];return DEFAULTS[k]||[]}
+function renderChipGroup(k){
+  let b=document.getElementById(k+"Chips");if(!b)return;
+  b.innerHTML=optionsFor(k).map(v=>`<button type="button" class="chip ${state[k].includes(v)?"on":""}" data-chip="${k}:${esc(v)}">${esc(v)}</button>`).join("");
+  let s=document.getElementById(k+"Selected");if(s)s.textContent=state[k].length?state[k].join(", "):"Nothing selected.";
+}
+function renderAllChips(){Object.keys(state).forEach(renderChipGroup)}
+function addValues(k,vals){vals.map(v=>String(v||"").trim()).filter(Boolean).forEach(v=>{if(v&&!state[k].includes(v))state[k].push(v)});renderAllChips()}
+function clearValues(k){state[k]=[];renderAllChips()}
+function toggle(k,v){state[k].includes(v)?state[k]=state[k].filter(x=>x!==v):state[k].push(v);renderAllChips()}
+
+document.addEventListener("click",e=>{
+  let c=e.target.closest("[data-chip]");if(c){let [k,...r]=c.dataset.chip.split(":");toggle(k,r.join(":"))}
+  let l=e.target.closest("[data-load]");if(l){let k=l.dataset.load;if(k==="suit")addValues("suitSizes",DEFAULTS.suitSizes);if(k==="alphaSuit")addValues("suitSizes",DEFAULTS.alphaSuit);if(k==="shirt")addValues("shirtSizes",DEFAULTS.shirtSizes);if(k==="alphaShirt")addValues("shirtSizes",DEFAULTS.alphaShirt);if(k==="pants")addValues("pantsSizes",DEFAULTS.pantsSizes);if(k==="shoe")addValues("shoeSizes",DEFAULTS.shoeSizes);if(k==="fits")addValues("fits",DEFAULTS.fits)}
+  let clr=e.target.closest("[data-clear]");if(clr)clearValues(clr.dataset.clear);
+  let a=e.target.closest("[data-add-custom]");if(a){let [id,k]=a.dataset.addCustom.split(":");let input=document.getElementById(id);addValues(k,String(input.value||"").split(","));input.value=""}
+});
+
+
+function shortPathForDisplay(path){
+  path = String(path || "");
+  if(path.startsWith("data:image/")) return "Selected image file saved inside product";
+  return path.replace("./images/","");
+}
+function clearVariantInputs(){
+  document.getElementById("variantColor").value="";
+  document.getElementById("variantImage").value="";
+  document.getElementById("variantPreview").innerHTML="No color image preview yet.";
+}
+function clearFallbackImage(){
+  document.getElementById("image").value="";
+  document.getElementById("preview").innerHTML="No fallback image preview yet.";
+}
+function clearAllVariants(){
+  if(!confirm("Delete all color variants from this product form?")) return;
+  variants=[];
+  renderVariants();
+  clearVariantInputs();
+}
+
+function renderVariants(){
+  const list=document.getElementById("variantList");
+  if(!variants.length){
+    list.innerHTML='<div class="note">No color variants added yet. Add at least one color for professional product display.</div>';
+    return;
+  }
+  list.innerHTML=variants.map((v,i)=>`<div class="variant-mini">
+    <img class="variant-preview" src="${esc(v.image||'./images/logo-hmf-gold.png')}" onerror="this.src='./images/logo-hmf-gold.png'">
+    <div>
+      <b>${esc(v.color||"No color name")}</b>
+      <div class="meta path-short" title="${esc(v.image||'No image')}">${esc(shortPathForDisplay(v.image||"No image"))}</div>
+    </div>
+    <div class="actions" style="margin:0">
+      <button class="btn" type="button" onclick="editVariant(${i})">Edit</button>
+      <button class="btn red" type="button" onclick="removeVariant(${i})">Delete Image</button>
+    </div>
+  </div>`).join("");
+}
+window.editVariant=function(i){
+  const v=variants[i];if(!v)return;
+  document.getElementById("variantColor").value=v.color||"";
+  document.getElementById("variantImage").value=cleanImg(v.image||"");
+  removeVariant(i,false);
+  previewVariantImage();
+}
+window.removeVariant=function(i,rerender=true){variants.splice(i,1);if(rerender)renderVariants()}
+function addVariant(){
+  const color=document.getElementById("variantColor").value.trim();
+  const image=normImg(document.getElementById("variantImage").value);
+  if(!color){setStatus("Color name is required for the variant.",true);return}
+  if(!image){setStatus("Image file/path is required for the variant.",true);return}
+  const existing=variants.findIndex(v=>String(v.color).toLowerCase()===color.toLowerCase());
+  const row={color,image};
+  if(existing>=0) variants[existing]=row; else variants.push(row);
+  document.getElementById("variantColor").value="";
+  document.getElementById("variantImage").value="";
+  document.getElementById("variantPreview").innerHTML="No color image preview yet.";
+  renderVariants();
+  setStatus("Color variant added.");
+}
+function previewVariantImage(){
+  const src=normImg(document.getElementById("variantImage").value);
+  const box=document.getElementById("variantPreview");
+  if(!src){box.textContent="No color image preview yet.";return}
+  box.innerHTML=`<img src="${esc(src)}" onerror="this.parentElement.innerHTML='Image not found. Check file name inside images folder.'">`;
+}
+
+function formData(){
+  let fallback=normImg(document.getElementById("image").value);
+  let finalVariants=normalizeVariants(variants,fallback,[]);
+  let image=fallback || (finalVariants[0]&&finalVariants[0].image) || "";
+  return{
+    id:document.getElementById("editId").value||uid(),
+    productMode:document.getElementById("productMode").value,
+    itemType:document.getElementById("itemType").value,
+    name:document.getElementById("name").value.trim(),
+    description:document.getElementById("description").value.trim(),
+    price:Number(document.getElementById("price").value||0),
+    styleNumber:document.getElementById("styleNumber").value.trim(),
+    category:document.getElementById("category").value.trim()||document.getElementById("itemType").value,
+    parts:[...state.parts],
+    image,
+    variants:finalVariants,
+    suitSizes:[...state.suitSizes],
+    sizes:[...state.suitSizes],
+    shirtSizes:[...state.shirtSizes],
+    pantsSizes:[...state.pantsSizes],
+    shoeSizes:[...state.shoeSizes],
+    colors:colorsFromVariants(finalVariants),
+    fits:[...state.fits],
+    updatedAt:new Date().toISOString()
+  }
+}
+function validate(p){if(!p.name)return"Product name is required.";if(!p.price||p.price<=0)return"Valid price is required.";if(!p.variants.length && !p.image)return"Add at least one color variant with image, or add a fallback image.";return""}
+function setStatus(m,b=false){let el=document.getElementById("status");el.textContent=m;el.className="status"+(b?" bad":"");setTimeout(()=>{if(el.textContent===m)el.textContent=""},3500)}
+function saveForm(){
+  let p=formData(),err=validate(p);if(err){setStatus(err,true);return}
+  let products=getProducts(),idx=products.findIndex(x=>x.id===p.id);
+  idx>=0?products[idx]={...products[idx],...p}:products.unshift({...p,createdAt:new Date().toISOString()});
+  saveProducts(products);renderProducts();resetForm();setStatus(idx>=0?"Product updated.":"Product added.");
+}
+function editProduct(id){
+  let p=getProducts().find(x=>x.id===id);if(!p)return;
+  document.getElementById("formTitle").textContent="Edit Product";document.getElementById("btnSave").textContent="Update Product";document.getElementById("editId").value=p.id;
+  document.getElementById("productMode").value=p.productMode||"outfit";document.getElementById("itemType").value=p.itemType||"Suit";
+  ["name","description","price","styleNumber","category"].forEach(k=>document.getElementById(k).value=p[k]||"");
+  variants=normalizeVariants(p.variants,p.image,p.colors);
+  document.getElementById("image").value=variants.length?"":cleanImg(p.image||"");
+  state.parts=[...(p.parts||[])];state.suitSizes=[...(p.suitSizes||p.sizes||[])];state.shirtSizes=[...(p.shirtSizes||[])];state.pantsSizes=[...(p.pantsSizes||[])];state.shoeSizes=[...(p.shoeSizes||[])];state.fits=[...(p.fits||[])];
+  renderAllChips();renderVariants();previewImage();window.scrollTo({top:0,behavior:"smooth"});
+}
+function removeProduct(id){let p=getProducts().find(x=>x.id===id);if(!p||!confirm("Remove this product?\n\n"+p.name))return;saveProducts(getProducts().filter(x=>x.id!==id));renderProducts();setStatus("Product removed.")}
+function duplicateProduct(id){let p=getProducts().find(x=>x.id===id);if(!p)return;let c={...p,id:uid(),name:(p.name||"Product")+" Copy",createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()};let arr=getProducts();arr.unshift(c);saveProducts(arr);renderProducts();setStatus("Product duplicated.")}
+function renderProducts(){
+  let list=document.getElementById("productList"),products=getProducts();document.getElementById("count").textContent=products.length+" product(s) saved.";
+  if(!products.length){list.innerHTML='<div class="note">No products added yet.</div>';return}
+  list.innerHTML=products.map(p=>{
+    const vs=normalizeVariants(p.variants,p.image,p.colors);
+    return `<div class="item"><img src="${esc(mainImage({...p,variants:vs}))}" onerror="this.src='./images/logo-hmf-gold.png'" alt="${esc(p.name)}"><div>
+      <h3>${esc(p.name)}</h3><div class="meta">${money(p.price)} • ${esc(p.category||"")} • ${esc(p.itemType||"")} • ${esc(p.productMode||"")}</div>
+      <p>${esc(p.description||"")}</p>
+      <div class="meta">
+      ${p.styleNumber?`Style: ${esc(p.styleNumber)}<br>`:""}
+      ${vs.length?`Color Variants: ${esc(vs.map(v=>v.color).join(", "))}<br>`:""}
+      ${p.parts?.length?`Parts: ${esc(p.parts.join(" + "))}<br>`:""}
+      ${p.suitSizes?.length?`Jacket/Suit: ${esc(p.suitSizes.join(", "))}<br>`:""}
+      ${p.shirtSizes?.length?`Shirt: ${esc(p.shirtSizes.join(", "))}<br>`:""}
+      ${p.pantsSizes?.length?`Pants: ${esc(p.pantsSizes.join(", "))}<br>`:""}
+      ${p.shoeSizes?.length?`Shoes: ${esc(p.shoeSizes.join(", "))}<br>`:""}
+      ${p.fits?.length?`Fits: ${esc(p.fits.join(", "))}`:""}
+      </div>
+      <div class="item-actions"><button class="btn green" onclick="editProduct('${p.id}')">Edit</button><button class="btn" onclick="duplicateProduct('${p.id}')">Duplicate</button><button class="btn red" onclick="removeProduct('${p.id}')">Remove</button></div>
+    </div></div>`
+  }).join("")
+}
+function resetForm(){
+  document.getElementById("formTitle").textContent="Add Product";document.getElementById("btnSave").textContent="Add Product";document.getElementById("editId").value="";
+  ["name","description","price","styleNumber","category","image","variantColor","variantImage"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("productMode").value="outfit";document.getElementById("itemType").value="Suit";Object.keys(state).forEach(k=>state[k]=[]);variants=[];
+  renderAllChips();renderVariants();document.getElementById("preview").innerHTML="No fallback image preview yet.";document.getElementById("variantPreview").innerHTML="No color image preview yet.";
+}
+function previewImage(){let src=normImg(document.getElementById("image").value),box=document.getElementById("preview");if(!src){box.textContent="No fallback image preview yet.";return}box.innerHTML=`<img src="${esc(src)}" onerror="this.parentElement.innerHTML='Image not found. Check file name inside images folder.'">`}
+function extractProductsFromBackup(data){if(Array.isArray(data))return data;if(data&&Array.isArray(data.products))return data.products;if(data&&Array.isArray(data.items))return data.items;if(data&&Array.isArray(data.outfits))return data.outfits;if(data&&Array.isArray(data.HMF_ADMIN_PRODUCTS))return data.HMF_ADMIN_PRODUCTS;return null}
+function cleanImportedProducts(products){
+  return products.map((p,i)=>{
+    p=p||{};const image=p.image||(p.variants&&p.variants[0]&&p.variants[0].image)||"";const vs=normalizeVariants(p.variants,image,p.colors);
+    return{
+      id:p.id||("hmf_import_"+Date.now()+"_"+i),productMode:p.productMode||p.mode||"outfit",itemType:p.itemType||p.type||"Suit",
+      name:p.name||p.title||"H Men's Fashion Product",description:p.description||p.desc||"",price:Number(p.price||0),styleNumber:p.styleNumber||p.style||"",
+      category:p.category||"Complete Outfit",parts:Array.isArray(p.parts)?p.parts:[],image:image||((vs[0]&&vs[0].image)||""),variants:vs,
+      suitSizes:Array.isArray(p.suitSizes)?p.suitSizes:(Array.isArray(p.sizes)?p.sizes:[]),sizes:Array.isArray(p.suitSizes)?p.suitSizes:(Array.isArray(p.sizes)?p.sizes:[]),
+      shirtSizes:Array.isArray(p.shirtSizes)?p.shirtSizes:[],pantsSizes:Array.isArray(p.pantsSizes)?p.pantsSizes:[],shoeSizes:Array.isArray(p.shoeSizes)?p.shoeSizes:[],
+      colors:colorsFromVariants(vs),fits:Array.isArray(p.fits)?p.fits:(Array.isArray(p.fitTypes)?p.fitTypes:[]),createdAt:p.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()
+    };
+  });
+}
+function finishImport(data){let products=extractProductsFromBackup(data);if(!products){alert("This backup file is not recognized.");return}products=cleanImportedProducts(products);if(!products.length){alert("Backup has 0 products.");return}if(!confirm("Import "+products.length+" products/outfits? This will replace current admin products."))return;saveProducts(products);renderProducts();alert("Imported "+products.length+" products/outfits successfully.")}
+function exportBackup(){let blob=new Blob([JSON.stringify(getProducts(),null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=BACKUP_NAME;a.click();URL.revokeObjectURL(a.href)}
+function importBackup(){let input=document.createElement("input");input.type="file";input.accept=".json,application/json,text/plain";input.onchange=async()=>{let file=input.files&&input.files[0];if(!file)return;let text=await file.text();let data;try{data=JSON.parse(text)}catch(e){alert("Invalid backup file. It is not JSON.");return}finishImport(data)};input.click()}
+function pasteImportBackup(){const text=prompt("Paste your backup JSON here:");if(!text)return;let data;try{data=JSON.parse(text)}catch(e){alert("Invalid pasted backup. It is not JSON.");return}finishImport(data)}
+document.getElementById("btnSave").onclick=saveForm;document.getElementById("btnReset").onclick=resetForm;document.getElementById("btnPreview").onclick=previewImage;document.getElementById("btnAddVariant").onclick=addVariant;document.getElementById("btnPreviewVariantImage").onclick=previewVariantImage;document.getElementById("btnReload").onclick=renderProducts;document.getElementById("btnExport").onclick=exportBackup;document.getElementById("btnExport2").onclick=exportBackup;document.getElementById("btnImport").onclick=importBackup;document.getElementById("btnPasteImport").onclick=pasteImportBackup;document.getElementById("btnClearAll").onclick=()=>{if(confirm("Clear ALL products from this admin storage?")){saveProducts([]);renderProducts();resetForm()}};
+document.getElementById("fileImage").onchange=e=>{let file=e.target.files[0];if(!file)return;let r=new FileReader();r.onload=()=>{document.getElementById("image").value=r.result;previewImage()};r.readAsDataURL(file)};
+document.getElementById("variantFile").onchange=e=>{let file=e.target.files[0];if(!file)return;let r=new FileReader();r.onload=()=>{document.getElementById("variantImage").value=r.result;previewVariantImage()};r.readAsDataURL(file)};
+
+document.getElementById("btnClearVariantInputs")?.addEventListener("click", clearVariantInputs);
+document.getElementById("btnClearAllVariants")?.addEventListener("click", clearAllVariants);
+document.getElementById("btnClearFallbackImage")?.addEventListener("click", clearFallbackImage);
+
+makeGroups();renderAllChips();renderVariants();renderProducts();
+</script>
+</body>
+</html>
