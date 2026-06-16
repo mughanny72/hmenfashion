@@ -3,16 +3,89 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>HMF — LOCAL TEST</title>
-  <meta name="description" content="Affordable luxury menswear—suits, smart casual, shoes, accessories. Smart value, sharp style." />
+  <title>H Men’s Fashion | Now Open</title>
+  <meta name="description" content="H Men’s Fashion is now open at Westmoreland Mall in Greensburg, PA. Shop suits, shirts, T-shirts, pants, shoes, accessories, and complete outfits online." />
   <meta name="theme-color" content="#0b0c10" />
   <link rel="stylesheet" href="./style.css" />
+<link rel="stylesheet" href="./hmf-card-layout-restore.css">
+  <style>
+    /* === HMF 3-IN-1 HOMEPAGE + STORE FIX === */
+    .splash.hmf-hide{opacity:0!important;visibility:hidden!important;pointer-events:none!important;transition:opacity .55s ease, visibility .55s ease!important;}
+    .splash .splash-messages{display:block!important;color:#f4e3a0!important;font-weight:800!important;line-height:1.55!important;}
+    .splash .splash-messages .open-pill{display:inline-flex;margin:10px 0 12px;padding:8px 14px;border-radius:999px;background:linear-gradient(135deg,#f0d27a,#d4af52);color:#111;font-weight:950;text-transform:uppercase;letter-spacing:.08em;}
+    .splash-preview-btn{display:none!important;}
+    .hmf-home{position:relative;overflow:auto;border:1px solid rgba(212,175,82,.22);border-radius:28px;margin:22px 0 26px;padding:28px;background:radial-gradient(circle at 18% 20%,rgba(212,175,82,.20),transparent 32%),linear-gradient(145deg,rgba(212,175,82,.08),rgba(0,0,0,.80));box-shadow:0 24px 80px rgba(0,0,0,.35)}
+    .hmf-hero{display:grid;grid-template-columns:1.05fr .95fr;gap:24px;align-items:center}.hmf-pill{display:inline-flex;align-items:center;border-radius:999px;padding:9px 14px;background:linear-gradient(135deg,#f0d27a,#d4af52);color:#111;font-weight:950;text-transform:uppercase;letter-spacing:.08em;font-size:13px}.hmf-hero h1{font-size:clamp(34px,5vw,68px);line-height:.96;margin:20px 0 14px;text-transform:uppercase;letter-spacing:.03em}.hmf-hero h1 span{color:#f0d27a}.hmf-lead{color:#d8c27a;font-size:clamp(16px,2vw,20px);line-height:1.58;margin:0 0 18px}.hmf-address{border:1px solid rgba(212,175,82,.30);border-radius:20px;padding:18px;background:rgba(0,0,0,.36);color:#f4e3a0;line-height:1.6;margin:18px 0}.hmf-address b{display:block;color:#fff;font-size:18px;margin-bottom:5px}.hmf-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.hmf-video-card{border:1px solid rgba(212,175,82,.25);border-radius:24px;background:#050609;overflow:auto;min-height:360px;display:grid;place-items:center}.hmf-video-card video{width:100%;height:100%;min-height:360px;object-fit:cover;display:block}.hmf-video-note{padding:24px;text-align:center;color:#d8c27a}.hmf-cat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:22px}.hmf-cat{border:1px solid rgba(212,175,82,.25);border-radius:18px;padding:14px;background:rgba(0,0,0,.34);min-height:92px;display:flex;flex-direction:column;justify-content:space-between}.hmf-cat b{color:#fff}.hmf-cat span{color:#d8c27a;font-size:12px}.hmf-video-section{margin-top:26px}.hmf-video-section h2,.hmf-featured-section h2{margin:0 0 8px;font-size:clamp(26px,3.5vw,42px)}.hmf-featured-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}.hmf-feature-card{border:1px solid rgba(212,175,82,.25);border-radius:22px;background:rgba(0,0,0,.36);overflow:auto}.hmf-feature-img{height:250px;background:#050609;display:flex;align-items:center;justify-content:center;overflow:auto}.hmf-feature-img img{max-width:100%;max-height:100%;object-fit:contain}.hmf-feature-body{padding:15px}.hmf-feature-body h3{margin:0 0 6px}.hmf-price{color:#f0d27a;font-weight:950;font-size:20px;margin-top:8px}.hmf-now-open-bar{margin-top:26px;border:1px solid rgba(212,175,82,.25);border-radius:22px;padding:18px;background:rgba(212,175,82,.08);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.hmf-store-title{padding-top:18px}.sidenav .hmf-home-link{border-color:rgba(212,175,82,.30)}
+    @media(max-width:980px){.hmf-hero{grid-template-columns:1fr}.hmf-cat-grid{grid-template-columns:repeat(3,1fr)}.hmf-featured-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:640px){.hmf-home{padding:18px;margin:12px 0 20px}.hmf-cat-grid{grid-template-columns:1fr 1fr}.hmf-featured-grid{grid-template-columns:1fr}.hmf-video-card,.hmf-video-card video{min-height:260px}.hmf-feature-img{height:220px}}
+  
+/* === FINAL FIX: remove old coming-soon splash flash === */
+#splash,
+.splash{
+  display:none !important;
+  opacity:0 !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+#layout,
+.layout{
+  opacity:1 !important;
+  visibility:visible !important;
+}
+
+
+/* === FINAL SCROLL FIX: allow full page scrolling === */
+html,
+body{
+  height:auto !important;
+  min-height:100% !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+}
+
+body{
+  position:static !important;
+}
+
+#layout,
+.layout{
+  height:auto !important;
+  min-height:100vh !important;
+  overflow:visible !important;
+}
+
+#main,
+.main{
+  height:auto !important;
+  min-height:100vh !important;
+  overflow:visible !important;
+}
+
+.sidebar{
+  height:100vh !important;
+  max-height:100vh !important;
+  overflow-y:auto !important;
+}
+
+.mainbar{
+  position:sticky !important;
+  top:0 !important;
+  z-index:40 !important;
+}
+
+section,
+.section{
+  scroll-margin-top:110px !important;
+}
+
+</style>
+
 </head>
 
 <body>
 
-  <!-- ✅ FULL-SCREEN COMING-SOON SPLASH (visitors see this until admin opens the site) -->
-  <div id="splash" class="splash" aria-label="H Men's Fashion — Coming Soon">
+  <!-- HMF QUICK LOGO SPLASH -->
+  <div id="splash" class="splash" aria-label="H Men's Fashion">
     <div class="splash-bg" aria-hidden="true"></div>
     <div class="splash-particles" aria-hidden="true">
       <span></span><span></span><span></span><span></span><span></span><span></span>
@@ -25,7 +98,7 @@
       <div class="splash-tag">Affordable Luxury &middot; Smart Style</div>
       <div class="splash-divider" aria-hidden="true"></div>
 
-      <div id="splashMessages" class="splash-messages"></div>
+      <div id="splashMessages" class="splash-messages"><div class="open-pill">Now Open</div><div>Westmoreland Mall · Greensburg, PA</div><div>5256 US-30, Suite NL-04</div></div>
 
       <div class="splash-foot muted">&copy; <span id="splashYear"></span> hmenfashion.com</div>
     </div>
@@ -54,7 +127,14 @@
       </div>
 
       <nav class="sidenav">
-        <a class="navlink active" href="#outfits">
+        <a class="navlink hmf-home-link active" href="#home">
+          <span class="navicon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V11z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="navtext">Home</span>
+        </a>
+
+        <a class="navlink" href="#outfits">
           <span class="navicon" aria-hidden="true">
             <!-- sparkles -->
             <svg viewBox="0 0 24 24"><path d="M12 2l1.2 4.3L17.5 8l-4.3 1.2L12 13.5l-1.2-4.3L6.5 8l4.3-1.7L12 2zM19 11l.8 2.9L23 15l-3.2.9L19 19l-.8-3.1L15 15l3.2-1.1L19 11zM4.5 13l.7 2.4L7.8 16l-2.6.6L4.5 19l-.7-2.4L1.2 16l2.6-.6L4.5 13z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
@@ -157,6 +237,59 @@
   <button class="btn primary" id="btnScrollCart" type="button">View Cart</button>
 </div>
       </header>
+
+
+      <!-- HMF NOW OPEN HOMEPAGE + VIDEO + FEATURED PRODUCTS -->
+      <section class="section hmf-home" id="home">
+        <div class="hmf-hero">
+          <div>
+            <div class="hmf-pill">Now Open</div>
+            <h1>Luxury Look.<br><span>Smart Value.</span></h1>
+            <p class="hmf-lead">H Men’s Fashion is now open at Westmoreland Mall. Shop in-store or online for suits, shirts, T-shirts, pants, shoes, accessories, and complete outfits.</p>
+            <div class="hmf-address">
+              <b>H Men’s Fashion — Westmoreland Mall</b>
+              5256 US-30, Suite NL-04<br>
+              Greensburg, PA 15601
+            </div>
+            <div class="hmf-actions">
+              <a class="btn primary" href="#outfits">Shop Now</a>
+              <a class="btn ghost" href="#storeVideo">Watch Store Video</a>
+              <a class="btn ghost" href="https://www.google.com/maps/search/?api=1&query=5256+US-30,+Suite+NL-04,+Greensburg,+PA+15601" target="_blank" rel="noopener">Get Directions</a>
+            </div>
+          </div>
+          <div class="hmf-video-card">
+            <video autoplay muted loop playsinline controls poster="./images/store-video-poster.jpg">
+              <source src="./videos/store-video.mp4" type="video/mp4">
+            </video>
+            <div class="hmf-video-note">Store video: put your video in <b>videos/store-video.mp4</b></div>
+          </div>
+        </div>
+
+        <div class="hmf-cat-grid" aria-label="Shop categories">
+          <a class="hmf-cat" href="#outfits"><b>Outfits</b><span>Complete looks ready to wear</span></a>
+          <a class="hmf-cat" href="#outfits"><b>Suits</b><span>Business, wedding, and events</span></a>
+          <a class="hmf-cat" href="#outfits"><b>Shirts</b><span>Dress and casual shirts</span></a>
+          <a class="hmf-cat" href="#outfits"><b>T-Shirts</b><span>Everyday smart casual</span></a>
+          <a class="hmf-cat" href="#outfits"><b>Pants</b><span>Dress pants, jeans, and casual</span></a>
+          <a class="hmf-cat" href="#outfits"><b>Shoes</b><span>Loafers, dress shoes, and casual</span></a>
+        </div>
+
+        <div class="hmf-video-section" id="storeVideo">
+          <h2>Inside H Men’s Fashion</h2>
+          <p class="muted">See the store, featured styles, and outfit ideas before you visit or shop online.</p>
+        </div>
+
+        <div class="hmf-featured-section" id="featured">
+          <div class="hmf-now-open-bar">
+            <div>
+              <h2>Featured Items & Outfits</h2>
+              <p class="muted">Selected from your current admin products.</p>
+            </div>
+            <a class="btn primary" href="#outfits">View Full Store</a>
+          </div>
+          <div class="hmf-featured-grid" id="hmfFeaturedGrid"></div>
+        </div>
+      </section>
 
 
 <!-- ✅ LOOKBOOK (UPGRADED: full-screen + dots + arrows + autoplay-ready + accessibility) -->
@@ -276,8 +409,8 @@
       <section class="section" id="outfits">
         <div class="section-head">
           <div>
-            <h1>Outfits</h1>
-            <p class="muted">Complete looks. Smart value. Built for confidence.</p>
+            <h1 class="hmf-store-title">Full Store</h1>
+            <p class="muted">Choose complete outfits or individual pieces. Select size, color, and fit, then add to cart.</p>
           </div>
           <div class="chips" id="chips"></div>
         </div>
@@ -458,6 +591,61 @@
     </div>
   </div>
 
+
+<script>
+(function(){
+  function money(n){return "$"+Number(n||0).toFixed(2)}
+  function esc(v){return String(v??"").replace(/[&<>\'\"]/g,function(ch){return {"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'\"':"&quot;"}[ch]})}
+  function firstImage(p){
+    if(p && Array.isArray(p.variants) && p.variants.length && p.variants[0].image) return p.variants[0].image;
+    return (p && p.image) || "./images/logo-hmf-gold.png";
+  }
+  function renderFeatured(){
+    var grid=document.getElementById("hmfFeaturedGrid");
+    if(!grid) return;
+    var products=[];
+    try{products=JSON.parse(localStorage.getItem("HMF_ADMIN_PRODUCTS")||"[]")}catch(e){products=[]}
+    if(!products.length){
+      grid.innerHTML='<div class="hmf-feature-card"><div class="hmf-feature-img"><img src="./images/logo-hmf-gold.png" alt="H Men\'s Fashion"></div><div class="hmf-feature-body"><h3>Featured Looks</h3><p class="muted">Add products in admin and they will appear here automatically.</p><div class="hmf-price">Shop Now</div></div></div>';
+      return;
+    }
+    grid.innerHTML=products.slice(0,6).map(function(p){
+      return '<a class="hmf-feature-card" href="#outfits"><div class="hmf-feature-img"><img src="'+esc(firstImage(p))+'" alt="'+esc(p.name||"H Men\'s Fashion product")+'"></div><div class="hmf-feature-body"><h3>'+esc(p.name||"H Men\'s Fashion")+'</h3><p class="muted">'+esc(p.description||"Affordable luxury and smart style.")+'</p><div class="hmf-price">'+money(p.price)+'</div></div></a>';
+    }).join("");
+  }
+  function hideSplash(){
+    var s=document.getElementById("splash");
+    if(s) s.classList.add("hmf-hide");
+  }
+  window.addEventListener("DOMContentLoaded", function(){
+    renderFeatured();
+    setTimeout(hideSplash, 2200);
+    var admin=document.getElementById("splashAdminBtn");
+    if(admin) admin.onclick=function(){ location.href="./admin.html"; };
+  });
+  window.addEventListener("load", function(){ setTimeout(hideSplash, 2600); renderFeatured(); });
+})();
+</script>
+
   <script src="./app.js"></script>
+
+<script src="./hmf-products-addon.js"></script>
+<script src="./hmf-stripe-checkout.js"></script>
+<script src="./hmf-preview-click-only.js"></script>
+
+
+<script>
+(function(){
+  function finalFix(){
+    var s=document.getElementById('splash');
+    if(s) s.classList.add('hmf-hide');
+    var btn=document.getElementById('btnCheckout');
+    if(btn){btn.disabled=false; if(!btn.textContent.trim()) btn.textContent='Checkout Securely';}
+  }
+  setTimeout(finalFix,3000);
+  setTimeout(finalFix,5000);
+})();
+</script>
+
 </body>
 </html>
