@@ -3,54 +3,51 @@
 <head><meta charset="utf-8"><title>Success</title></head>
 <body style="font-family:Arial;padding:30px">
   <h1>✅ Payment Successful</h1>
-  <p>Thank you! Your subscription is active.</p>
-
-  <p id="msg">Loading...</p>
+  <p id="headline">Loading...</p>
+  <p id="msg"></p>
   <p id="sid"></p>
-
   <button id="go" style="display:none;padding:10px 16px;margin-right:10px">Go to Member Area</button>
+  <button id="back" style="display:none;padding:10px 16px;margin-right:10px">Back to Store</button>
   <button id="logout" style="display:none;padding:10px 16px">Logout</button>
-
   <script>
     const p = new URLSearchParams(location.search);
     const sid = p.get("session_id");
     document.getElementById("sid").textContent = sid ? ("Session: " + sid) : "";
-
     async function run(){
       if(!sid){
-        document.getElementById("msg").textContent = "Missing session_id.";
+        document.getElementById("headline").textContent = "Missing session_id.";
         return;
       }
-
       try{
         const r = await fetch("/api/get-session-email?session_id=" + encodeURIComponent(sid));
         const j = await r.json();
-
         if(!j.ok || !j.email){
-          document.getElementById("msg").textContent =
+          document.getElementById("headline").textContent =
             "Email not found. Please go back and enter your email before checkout.";
           return;
         }
-
-        // ✅ this is the only thing your member page needs
         localStorage.setItem("userEmail", String(j.email).trim().toLowerCase());
 
-        document.getElementById("msg").textContent =
-          "Saved email: " + j.email + " ✅";
-
-        document.getElementById("go").style.display = "inline-block";
-        document.getElementById("logout").style.display = "inline-block";
+        if (j.mode === "subscription") {
+          document.getElementById("headline").textContent = "Thank you! Your subscription is active.";
+          document.getElementById("msg").textContent = "Saved email: " + j.email + " ✅";
+          document.getElementById("go").style.display = "inline-block";
+          document.getElementById("logout").style.display = "inline-block";
+        } else {
+          document.getElementById("headline").textContent = "Thank you for your order!";
+          document.getElementById("msg").textContent = "A confirmation has been sent to " + j.email + ". We'll be in touch about shipping.";
+          document.getElementById("back").style.display = "inline-block";
+        }
       }catch(e){
-        document.getElementById("msg").textContent = "Server error.";
+        document.getElementById("headline").textContent = "Server error.";
       }
     }
-
-    document.getElementById("go").onclick = () => location.href = "/app.html"; // change to your member page
+    document.getElementById("go").onclick = () => location.href = "/app.html";
+    document.getElementById("back").onclick = () => location.href = "/index.html";
     document.getElementById("logout").onclick = () => {
       localStorage.removeItem("userEmail");
       location.href = "/index.html";
     };
-
     run();
   </script>
 </body>
