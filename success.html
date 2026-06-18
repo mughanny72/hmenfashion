@@ -1,18 +1,20 @@
 <!doctype html>
 <html>
-<head><meta charset="utf-8"><title>Success</title></head>
-<body style="font-family:Arial;padding:30px">
+<head><meta charset="utf-8"><title>Success — H Men's Fashion</title></head>
+<body style="font-family:Arial;padding:30px;background:#0b0c10;color:#fff;">
   <h1>✅ Payment Successful</h1>
   <p id="headline">Loading...</p>
   <p id="msg"></p>
-  <p id="sid"></p>
-  <button id="go" style="display:none;padding:10px 16px;margin-right:10px">Go to Member Area</button>
-  <button id="back" style="display:none;padding:10px 16px;margin-right:10px">Back to Store</button>
-  <button id="logout" style="display:none;padding:10px 16px">Logout</button>
+  <p id="sid" style="color:#666;font-size:12px;"></p>
+  <button id="go" style="display:none;padding:10px 16px;margin-right:10px;background:#caa24a;color:#111;border:none;border-radius:10px;font-weight:900;cursor:pointer;">Go to Member Area</button>
+  <button id="back" style="display:none;padding:10px 16px;margin-right:10px;background:#caa24a;color:#111;border:none;border-radius:10px;font-weight:900;cursor:pointer;">Back to Store</button>
+  <a href="./my-combos.html" id="comboLink" style="display:none;padding:10px 16px;background:rgba(212,175,82,.15);color:#f0d27a;border:1px solid rgba(212,175,82,.4);border-radius:10px;font-weight:900;text-decoration:none;">Check My Combo Rewards</a>
+  <button id="logout" style="display:none;padding:10px 16px;margin-left:10px;background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:10px;font-weight:900;cursor:pointer;">Logout</button>
   <script>
     const p = new URLSearchParams(location.search);
     const sid = p.get("session_id");
     document.getElementById("sid").textContent = sid ? ("Session: " + sid) : "";
+
     async function run(){
       if(!sid){
         document.getElementById("headline").textContent = "Missing session_id.";
@@ -35,8 +37,34 @@
           document.getElementById("logout").style.display = "inline-block";
         } else {
           document.getElementById("headline").textContent = "Thank you for your order!";
-          document.getElementById("msg").textContent = "A confirmation has been sent to " + j.email + ". We'll be in touch about shipping.";
+          document.getElementById("msg").textContent =
+            "A confirmation has been sent to " + j.email + ". We'll be in touch about shipping.";
           document.getElementById("back").style.display = "inline-block";
+
+          // ── Fire combo sale increment if this cart had a named combo ──
+          try {
+            const cartRaw = localStorage.getItem("HMEN_CART_V1");
+            const cartArr = cartRaw ? JSON.parse(cartRaw) : [];
+            const combosToIncrement = [...new Set(
+              cartArr.filter(i => i.comboId).map(i => i.comboId)
+            )];
+            for (const comboId of combosToIncrement) {
+              const cr = await fetch("/api/combo-sale", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ comboId })
+              });
+              const cd = await cr.json();
+              if (cd.rewardUnlocked && cd.rewardCode) {
+                document.getElementById("msg").textContent +=
+                  ` 🎉 Your combo just hit 10 sales! Check My Combo Rewards for your 50% off code.`;
+                document.getElementById("comboLink").style.display = "inline-block";
+              }
+            }
+          } catch(_) {}
+
+          // Clear cart after successful purchase
+          localStorage.setItem("HMEN_CART_V1", "[]");
         }
       }catch(e){
         document.getElementById("headline").textContent = "Server error.";
