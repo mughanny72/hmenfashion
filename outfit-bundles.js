@@ -740,3 +740,218 @@
     renderBundleCards();
   } catch (_) {}
 })();
+
+/* =========================================================================
+   COMBO LEADERBOARD + NAMING — customer competition feature
+   ─────────────────────────────────────────────────────────────────────────
+   After a customer customizes a bundle they can name it and enter their
+   email. The combo is saved to MongoDB with a timestamp. A live leaderboard
+   on the site shows all named combos with sold counts. Hitting 10 sales
+   unlocks a 50% off Stripe coupon for the creator.
+========================================================================= */
+(function initComboFeature() {
+
+  /* ── Leaderboard section injected below the Outfits section ── */
+  function ensureLeaderboardSection() {
+    if (document.getElementById("comboLeaderboard")) return;
+    const outfits = document.getElementById("outfits");
+    if (!outfits) return;
+
+    const section = document.createElement("section");
+    section.className = "section";
+    section.id = "comboLeaderboard";
+    section.innerHTML = `
+      <div class="section-head" style="margin-bottom:16px;">
+        <div>
+          <h2 style="margin:0 0 6px;">🏆 Customer Combo Board</h2>
+          <p class="muted">Customers who named their outfit combo. Buy someone's combo and help them win 50% off their next order at 10 sales!</p>
+        </div>
+        <a href="./my-combos.html" class="btn ghost" style="white-space:nowrap;">Check My Rewards</a>
+      </div>
+      <div id="comboLeaderboardList" class="muted tiny">Loading combos...</div>
+    `;
+    outfits.parentNode.insertBefore(section, outfits.nextSibling);
+    loadLeaderboard();
+  }
+
+  async function loadLeaderboard() {
+    const list = document.getElementById("comboLeaderboardList");
+    if (!list) return;
+    try {
+      const r = await fetch("/api/combos");
+      const data = await r.json();
+      if (!data.ok || !data.combos.length) {
+        list.innerHTML = `<div class="muted">No named combos yet — be the first to name yours!</div>`;
+        return;
+      }
+      list.innerHTML = data.combos.map(c => {
+        const pct = Math.min(100, Math.round((c.soldCount / 10) * 100));
+        const selections = (c.selections || []).map(s => `${s.label}: ${s.color}${s.size ? "/" + s.size : ""}`).join(" • ");
+        return `
+          <div style="border:1px solid rgba(212,175,82,.22);border-radius:18px;padding:14px;margin-bottom:12px;background:rgba(255,255,255,.03);">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+              <div>
+                <div style="font-weight:950;font-size:18px;">${esc(c.name)}</div>
+                <div class="muted tiny">${esc(c.bundleTitle)} • $${c.price} • Created ${esc(c.createdAtET)}</div>
+                <div class="muted tiny" style="margin-top:4px;">${esc(selections)}</div>
+              </div>
+              <button class="btn primary" data-buy-combo="${esc(c.id)}" data-combo-name="${esc(c.name)}" type="button" style="white-space:nowrap;">Buy This Combo</button>
+            </div>
+            <div style="background:rgba(255,255,255,.08);border-radius:999px;height:8px;margin:10px 0 4px;">
+              <div style="background:linear-gradient(90deg,#f0d27a,#d4af52);border-radius:999px;height:8px;width:${pct}%;transition:width .4s ease;"></div>
+            </div>
+            <div style="font-weight:900;">${c.soldCount} / 10 sold ${c.rewardUnlocked ? "🎉 Reward Unlocked!" : ""}</div>
+          </div>
+        `;
+      }).join("");
+
+      // Wire "Buy This Combo" buttons
+      list.querySelectorAll("[data-buy-combo]").forEach(btn => {
+        btn.addEventListener("click", () => buyExistingCombo(btn.dataset.buyCombo, btn.dataset.comboName, data.combos));
+      });
+    } catch (e) {
+      if (list) list.innerHTML = `<div class="muted">Could not load combos right now.</div>`;
+    }
+  }
+
+  async function buyExistingCombo(comboId, comboName, allCombos) {
+    const combo = allCombos.find(c => c.id === comboId);
+    if (!combo) return;
+
+    // Add to cart with the combo's exact selections
+    if (typeof cart === "undefined" || typeof saveCart !== "function") return;
+    cart.push({
+      key: "COMBO_" + comboId + "_" + Date.now(),
+      id: combo.bundleId,
+      title: `${combo.bundleTitle} — "${comboName}"`,
+      category: "OUTFITS",
+      size: "",
+      qty: 1,
+      price: combo.price,
+      unitAmount: Math.round(combo.price * 100),
+      comboId,
+      selections: combo.selections,
+      addedAt: Date.now(),
+    });
+    saveCart();
+    if (typeof renderCart === "function") renderCart();
+
+    // Record the sale increment after checkout (stored on cart item, fired post-purchase)
+    // We store comboId on the cart item so create-checkout-session can pass it in metadata,
+    // and combo-sale API is called from success.html after payment confirmed.
+    if (typeof setCartHint === "function") setCartHint(`"${comboName}" added to cart!`);
+    setTimeout(() => {
+      document.getElementById("cart")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 300);
+  }
+
+  /* ── Patch the customer modal to add name + email fields ── */
+  const _origOpenBundleModal = typeof openBundleModal !== "undefined" ? openBundleModal : null;
+
+  function patchBundleModal() {
+    // After the modal renders, inject the naming fields if they're not there yet
+    const modal = document.getElementById("bundleModal");
+    if (!modal || document.getElementById("bmComboName")) return;
+
+    const hint = document.getElementById("bmHint");
+    if (!hint) return;
+
+    const namingBox = document.createElement("div");
+    namingBox.style.cssText = "margin-top:16px;border-top:1px solid rgba(255,255,255,.12);padding-top:14px;";
+    namingBox.innerHTML = `
+      <div style="font-weight:950;font-size:15px;margin-bottom:4px;">Name your combo (optional)</div>
+      <div class="muted tiny" style="margin-bottom:10px;">Give your combo a name (e.g. "James' Olive Look") and if 10 people buy it, you win 50% off your next order.</div>
+      <input id="bmComboName" placeholder="e.g. James' Olive Look" style="width:100%;padding:11px 13px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:#090b11;color:#fff;font-size:14px;box-sizing:border-box;margin-bottom:8px;" />
+      <input id="bmComboEmail" type="email" placeholder="Your email (to claim your reward)" style="width:100%;padding:11px 13px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:#090b11;color:#fff;font-size:14px;box-sizing:border-box;margin-bottom:8px;" />
+      <div class="muted tiny" id="bmComboStatus"></div>
+    `;
+    hint.parentNode.insertBefore(namingBox, hint);
+  }
+
+  // Patch the addBundleToCart function to also save the named combo
+  document.addEventListener("click", async (e) => {
+    if (e.target && e.target.id === "bmAdd") {
+      // Let the existing addBundleToCart run first (it's already wired)
+      // Then after a brief tick, try to save the named combo
+      setTimeout(async () => {
+        const comboName = (document.getElementById("bmComboName")?.value || "").trim();
+        const comboEmail = (document.getElementById("bmComboEmail")?.value || "").trim().toLowerCase();
+        const statusEl = document.getElementById("bmComboStatus");
+
+        if (!comboName || !comboEmail) return; // naming is optional
+
+        // Find current bundle
+        const bundleModal = document.getElementById("bundleModal");
+        if (!bundleModal) return;
+        const titleEl = document.getElementById("bmTitle");
+        const priceEl = document.getElementById("bmPrice");
+        const parts = document.querySelectorAll("#bmParts [data-part]");
+
+        const selections = [];
+        const seen = new Set();
+        parts.forEach(el => {
+          const i = el.dataset.part;
+          if (seen.has(i)) return;
+          seen.add(i);
+          const colorEl = bundleModal.querySelector(`[data-part="${i}"][data-field="color"]`);
+          const sizeEl = bundleModal.querySelector(`[data-part="${i}"][data-field="size"]`);
+          // Find part label from the group title
+          const groupEl = colorEl?.closest(".group");
+          const labelEl = groupEl?.querySelector(".group-title");
+          const label = labelEl ? labelEl.textContent.replace("Main Photo", "").trim() : `Part ${i}`;
+          selections.push({
+            label,
+            color: colorEl ? colorEl.value : "",
+            size: sizeEl ? sizeEl.value : "",
+          });
+        });
+
+        if (!selections.length) return;
+
+        // Get bundle details from the cart (most recently added item)
+        const lastItem = typeof cart !== "undefined" && cart.length ? cart[cart.length - 1] : null;
+        const bundleId = lastItem?.id || "";
+        const bundleTitle = titleEl?.textContent || "";
+        const price = lastItem?.price || 0;
+
+        if (statusEl) statusEl.textContent = "Saving your combo name...";
+
+        try {
+          const r = await fetch("/api/combos", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: comboName, bundleId, bundleTitle, price, selections, creatorEmail: comboEmail }),
+          });
+          const data = await r.json();
+          if (r.status === 409) {
+            if (statusEl) statusEl.textContent = `⚠️ ${data.message}`;
+          } else if (data.ok) {
+            if (statusEl) statusEl.textContent = `✅ Saved as "${comboName}" on ${data.createdAtET}. Track sales at My Combos.`;
+            // Store comboId on the last cart item so success.html can increment the count
+            if (lastItem) {
+              lastItem.comboId = data.id;
+              if (typeof saveCart === "function") saveCart();
+            }
+          } else {
+            if (statusEl) statusEl.textContent = "Could not save combo name: " + (data.error || "unknown error");
+          }
+        } catch (err) {
+          if (statusEl) statusEl.textContent = "Network error saving combo name.";
+        }
+      }, 200);
+    }
+
+    // Patch the modal to inject naming fields whenever it opens
+    if (e.target && e.target.dataset && e.target.dataset.bundleOpen) {
+      setTimeout(patchBundleModal, 50);
+    }
+  });
+
+  // Init leaderboard after DOM is ready
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", ensureLeaderboardSection);
+  } else {
+    setTimeout(ensureLeaderboardSection, 500);
+  }
+
+})();
