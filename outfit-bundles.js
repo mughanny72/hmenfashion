@@ -1,14 +1,12 @@
 /* =========================================================================
    OUTFIT BUNDLES — multi-part outfits with color/size choice per part
    ─────────────────────────────────────────────────────────────────────────
-   Customer picks color (+size) for each included item (Suit, Shirt, Tie,
-   Shoes, Belt, etc.), one fixed price for the whole outfit. Plugs into the
-   existing cart + checkout — no changes needed to app.js or Stripe wiring.
+   v3: the FIRST part you add (e.g. Suit) becomes the "hero" item.
+   You upload one photo per color for that part, and when the customer
+   changes that part's color in the picker, the main outfit photo updates
+   live to match. Other parts stay as simple color/size dropdowns.
 
    Admin: sidebar button "Outfit Bundles" (shows only when signed in as admin)
-   - Click-to-select color & size chips (no typing required)
-   - Real image upload (Choose File) or paste a path
-   - Edit any saved part before re-adding it
    Storage: localStorage key HMEN_BUNDLES_V1
 ========================================================================= */
 (function () {
@@ -57,6 +55,14 @@
 
   const COMMON_COLORS = ["Black","Navy","Charcoal","Grey","White","Beige","Brown","Burgundy","Red","Blue","Light Blue","Green","Olive","Tan","Silver","Mint"];
 
+  /* ===================== Helpers for hero (main-photo) part ===================== */
+  function heroImageFor(bundle, selectedColor) {
+    const hero = bundle.parts && bundle.parts[0];
+    if (!hero || !hero.colorImages) return bundle.image || "";
+    const color = selectedColor || (hero.colors && hero.colors[0]) || "";
+    return hero.colorImages[color] || bundle.image || "";
+  }
+
   /* ===================== Render bundle cards into the existing Outfits grid ===================== */
   function renderBundleCards() {
     const grid = document.getElementById("productGrid");
@@ -65,9 +71,8 @@
     BUNDLES.forEach((b) => {
       const card = document.createElement("article");
       card.className = "card";
-      const visual = b.image
-        ? `<img class="pmedia" src="${esc(b.image)}" alt="${esc(b.title)}" loading="lazy" />`
-        : "";
+      const thumb = heroImageFor(b);
+      const visual = thumb ? `<img class="pmedia" src="${esc(thumb)}" alt="${esc(b.title)}" loading="lazy" />` : "";
       const partsLine = (b.parts || []).map((p) => p.label).join(" + ");
       card.innerHTML = `
         <div class="pimg" role="button" tabindex="0" aria-label="Customize ${esc(b.title)}">${visual}</div>
@@ -114,6 +119,10 @@
         <button class="iconbtn modalclose" id="btnCloseBundle" type="button" aria-label="Close">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
+        <div class="preview" id="bmMainImageWrap" style="min-height:220px;margin-bottom:14px;">
+          <img id="bmMainImage" style="width:100%;height:100%;max-height:340px;object-fit:contain;display:none;" />
+          <div id="bmMainImageEmpty" class="muted tiny">No photo for this outfit yet.</div>
+        </div>
         <h3 id="bmTitle" style="margin:0 0 6px;"></h3>
         <div class="price big" id="bmPrice" style="margin-bottom:10px;"></div>
         <div id="bmParts"></div>
@@ -131,6 +140,20 @@
 
   let __currentBundleId = null;
 
+  function updateBundleMainImage(bundle, color) {
+    const src = heroImageFor(bundle, color);
+    const img = document.getElementById("bmMainImage");
+    const empty = document.getElementById("bmMainImageEmpty");
+    if (src) {
+      img.src = src;
+      img.style.display = "block";
+      empty.style.display = "none";
+    } else {
+      img.style.display = "none";
+      empty.style.display = "block";
+    }
+  }
+
   function openBundleModal(id) {
     const b = BUNDLES.find((x) => x.id === id);
     if (!b) return;
@@ -147,7 +170,7 @@
         const sizeOpts = (p.sizes || []).map((s) => `<option value="${esc(s)}">${esc(s)}</option>`).join("");
         return `
           <div class="group" style="margin-top:10px;">
-            <div class="group-title">${esc(p.label)}</div>
+            <div class="group-title">${esc(p.label)}${i === 0 ? ' <span class="pill" style="font-size:10px;">Main Photo</span>' : ""}</div>
             <div class="row">
               ${colorOpts ? `<label class="lbl">Color<select class="select" data-part="${i}" data-field="color">${colorOpts}</select></label>` : ""}
               ${sizeOpts ? `<label class="lbl">Size<select class="select" data-part="${i}" data-field="size">${sizeOpts}</select></label>` : ""}
@@ -156,6 +179,15 @@
         `;
       })
       .join("");
+
+    // Wire the hero (first) part's color dropdown to update the main image live
+    const heroColorEl = wrap.querySelector(`[data-part="0"][data-field="color"]`);
+    if (heroColorEl) {
+      heroColorEl.addEventListener("change", () => updateBundleMainImage(b, heroColorEl.value));
+      updateBundleMainImage(b, heroColorEl.value);
+    } else {
+      updateBundleMainImage(b);
+    }
 
     document.getElementById("bmHint").textContent = "";
     if (typeof openOnlyModal === "function") openOnlyModal("#bundleModal");
@@ -211,8 +243,13 @@
   let __partType = "Suit";
   let __partColors = [];
   let __partSizes = [];
-  let __partImage = "";
-  let __editingBundleOrigId = "";
+  let __heroColorImages = {}; // colorName -> dataURL, only used for the part that will be index 0
+  let __baBundleImage = "";
+
+  function isHeroSlot() {
+    // The hero (main-photo) part is whichever one will land at index 0
+    return __bundleDraftParts.length === 0;
+  }
 
   function ensureBundleAdminModal() {
     if (document.getElementById("bundleAdminModal")) return;
@@ -229,7 +266,7 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
         <h3 style="margin:0 0 4px;">Outfit Bundles</h3>
-        <div class="muted tiny" style="margin-bottom:12px;">Complete outfits with color &amp; size choice per item, one fixed price.</div>
+        <div class="muted tiny" style="margin-bottom:12px;">Complete outfits with color &amp; size choice per item. The first part you add becomes the "hero" — its color changes the main photo.</div>
 
         <div id="bundleAdminList" style="margin-bottom:16px;"></div>
 
@@ -247,7 +284,7 @@
             <label class="admin-lbl">Price (USD, fixed for the whole outfit)
               <input id="baPrice" type="number" min="0" step="1" placeholder="250" />
             </label>
-            <label class="admin-lbl">Bundle Cover Image (optional)
+            <label class="admin-lbl">Fallback photo (used if a color has no photo)
               <input id="baImageFile" type="file" accept="image/*" />
             </label>
           </div>
@@ -256,7 +293,8 @@
           </div>
 
           <div style="margin-top:16px;border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:14px;background:rgba(255,255,255,.03);">
-            <div style="font-weight:950;font-size:18px;margin-bottom:10px;">Add a Part</div>
+            <div style="font-weight:950;font-size:18px;margin-bottom:4px;" id="baPartHeading">Add a Part</div>
+            <div class="muted tiny" id="baHeroNote" style="margin-bottom:10px;"></div>
 
             <label class="admin-lbl">Part Type
               <select id="baPartType" class="select">
@@ -275,6 +313,7 @@
                 <button class="btn" type="button" id="baAddCustomColor">Add Color</button>
               </div>
               <div class="selected" id="baColorsSelected">No colors selected.</div>
+              <div id="baHeroPhotosWrap" style="margin-top:10px;display:none;"></div>
             </div>
 
             <div class="group" style="margin-top:10px;">
@@ -315,13 +354,18 @@
     m.querySelector("#baPartType").addEventListener("change", (e) => {
       __partType = e.target.value;
       __partSizes = [];
+      __partColors = [];
+      __heroColorImages = {};
       renderColorChips();
       renderSizeChips();
+      renderHeroPhotoSlots();
     });
 
     m.querySelector("#baClearColors").addEventListener("click", () => {
       __partColors = [];
+      __heroColorImages = {};
       renderColorChips();
+      renderHeroPhotoSlots();
     });
     m.querySelector("#baClearSizes").addEventListener("click", () => {
       __partSizes = [];
@@ -334,6 +378,7 @@
       if (v && !__partColors.includes(v)) __partColors.push(v);
       el.value = "";
       renderColorChips();
+      renderHeroPhotoSlots();
     });
     m.querySelector("#baAddCustomSize").addEventListener("click", () => {
       const el = document.getElementById("baCustomSize");
@@ -362,8 +407,6 @@
     m.querySelector("#baClear").addEventListener("click", baClearForm);
   }
 
-  let __baBundleImage = "";
-
   function renderColorChips() {
     const wrap = document.getElementById("baColorChips");
     if (!wrap) return;
@@ -375,6 +418,7 @@
         const c = btn.dataset.colorChip;
         __partColors = __partColors.includes(c) ? __partColors.filter((x) => x !== c) : [...__partColors, c];
         renderColorChips();
+        renderHeroPhotoSlots();
       });
     });
     const sel = document.getElementById("baColorsSelected");
@@ -403,6 +447,57 @@
     if (sel) sel.textContent = __partSizes.length ? __partSizes.join(", ") : "No sizes selected (fine for items like a tie).";
   }
 
+  function renderHeroPhotoSlots() {
+    const wrap = document.getElementById("baHeroPhotosWrap");
+    const heading = document.getElementById("baPartHeading");
+    const note = document.getElementById("baHeroNote");
+    if (!wrap) return;
+
+    if (!isHeroSlot()) {
+      wrap.style.display = "none";
+      if (heading) heading.textContent = "Add a Part";
+      if (note) note.textContent = "";
+      return;
+    }
+
+    if (heading) heading.textContent = "Add the Main Item (drives the photo)";
+    if (note) note.textContent = 'Upload one photo per color below — this is the photo customers see, and it switches live when they change color.';
+
+    if (!__partColors.length) {
+      wrap.style.display = "none";
+      return;
+    }
+    wrap.style.display = "block";
+    wrap.innerHTML =
+      `<div class="muted tiny" style="margin-bottom:6px;">Photo for each color:</div>` +
+      __partColors
+        .map((c) => {
+          const existing = __heroColorImages[c];
+          return `
+          <div class="variant-row" style="margin-bottom:8px;">
+            <div style="font-weight:900;">${esc(c)}</div>
+            <input type="file" accept="image/*" data-hero-photo="${esc(c)}" />
+            ${existing ? `<img class="variant-preview" src="${existing}">` : `<span class="muted tiny">No photo yet</span>`}
+          </div>
+        `;
+        })
+        .join("");
+
+    wrap.querySelectorAll("[data-hero-photo]").forEach((input) => {
+      input.addEventListener("change", (e) => {
+        const color = input.dataset.heroPhoto;
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          __heroColorImages[color] = reader.result;
+          renderHeroPhotoSlots();
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+  }
+
   function baAddPart() {
     if (!__partColors.length) {
       document.getElementById("baPartHint").textContent = "Pick at least one color for this part.";
@@ -410,14 +505,19 @@
     }
     const existingIdx = __bundleDraftParts.findIndex((p) => p.label === __partType);
     const row = { label: __partType, colors: [...__partColors], sizes: [...__partSizes] };
+    if (isHeroSlot() || existingIdx === 0) {
+      row.colorImages = { ...__heroColorImages };
+    }
     if (existingIdx >= 0) __bundleDraftParts[existingIdx] = row;
     else __bundleDraftParts.push(row);
 
     document.getElementById("baPartHint").textContent = `${__partType} added.`;
     __partColors = [];
     __partSizes = [];
+    __heroColorImages = {};
     renderColorChips();
     renderSizeChips();
+    renderHeroPhotoSlots();
     renderDraftParts();
   }
 
@@ -425,7 +525,7 @@
     const wrap = document.getElementById("baPartsList");
     if (!wrap) return;
     if (!__bundleDraftParts.length) {
-      wrap.innerHTML = `<div class="muted tiny">No parts added yet — add at least one above (e.g. Suit, Shirt, Tie, Shoes, Belt).</div>`;
+      wrap.innerHTML = `<div class="muted tiny">No parts added yet — add the main item first (e.g. Suit), then Shirt, Tie, Shoes, Belt.</div>`;
       return;
     }
     wrap.innerHTML =
@@ -435,7 +535,7 @@
           (p, i) => `
         <div class="variant-mini" style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:16px;margin-bottom:8px;background:rgba(255,255,255,.03);">
           <div>
-            <b>${esc(p.label)}</b>
+            <b>${esc(p.label)}</b> ${i === 0 ? '<span class="pill" style="font-size:10px;">Main Photo</span>' : ""}
             <div class="muted tiny">Colors: ${esc(p.colors.join(", ") || "none")}${p.sizes.length ? " • Sizes: " + esc(p.sizes.join(", ")) : ""}</div>
           </div>
           <div style="display:flex;gap:8px;">
@@ -458,13 +558,15 @@
         const idx = Number(btn.dataset.editPart);
         const p = __bundleDraftParts[idx];
         if (!p) return;
-        __partType = p.label;
+        __partType = PART_TYPES.includes(p.label) ? p.label : "Other";
         __partColors = [...p.colors];
         __partSizes = [...p.sizes];
-        document.getElementById("baPartType").value = PART_TYPES.includes(p.label) ? p.label : "Other";
+        __heroColorImages = p.colorImages ? { ...p.colorImages } : {};
+        document.getElementById("baPartType").value = __partType;
         __bundleDraftParts.splice(idx, 1);
         renderColorChips();
         renderSizeChips();
+        renderHeroPhotoSlots();
         renderDraftParts();
         document.getElementById("baPartHint").textContent = `Editing "${p.label}" — adjust above, then click "+ Add This Part" to save it back.`;
       });
@@ -483,9 +585,11 @@
     __partType = "Suit";
     __partColors = [];
     __partSizes = [];
+    __heroColorImages = {};
     document.getElementById("baPartType").value = "Suit";
     renderColorChips();
     renderSizeChips();
+    renderHeroPhotoSlots();
     renderDraftParts();
     document.getElementById("baHint").textContent = "";
     document.getElementById("baPartHint").textContent = "";
@@ -533,10 +637,11 @@
       wrap.innerHTML = `<div class="muted tiny">No outfit bundles yet.</div>`;
       return;
     }
-    wrap.innerHTML = BUNDLES.map(
-      (b) => `
+    wrap.innerHTML = BUNDLES.map((b) => {
+      const thumb = heroImageFor(b);
+      return `
       <div class="admin-row-item">
-        <div class="admin-thumb">${b.image ? `<img src="${esc(b.image)}" alt="">` : ""}</div>
+        <div class="admin-thumb">${thumb ? `<img src="${thumb}" alt="">` : ""}</div>
         <div class="admin-info">
           <div class="admin-row-title">${esc(b.title)}</div>
           <div class="muted tiny">$${b.price} • ${esc((b.parts || []).map((p) => p.label).join(" + "))}</div>
@@ -546,8 +651,8 @@
           <button class="btn admin-del" data-del-bundle="${esc(b.id)}" type="button">Delete</button>
         </div>
       </div>
-    `
-    ).join("");
+    `;
+    }).join("");
     wrap.querySelectorAll("[data-edit-bundle]").forEach((btn) => {
       btn.addEventListener("click", () => baEdit(btn.dataset.editBundle));
     });
@@ -568,7 +673,7 @@
       document.getElementById("baImagePreview").src = __baBundleImage;
       document.getElementById("baImagePreviewWrap").style.display = "block";
     }
-    __bundleDraftParts = (b.parts || []).map((p) => ({ ...p }));
+    __bundleDraftParts = (b.parts || []).map((p) => ({ ...p, colorImages: p.colorImages ? { ...p.colorImages } : undefined }));
     renderDraftParts();
     document.getElementById("baHint").textContent = "Editing " + b.id;
   }
@@ -591,6 +696,7 @@
     ensureBundleAdminModal();
     renderColorChips();
     renderSizeChips();
+    renderHeroPhotoSlots();
     renderDraftParts();
     renderBundleAdminList();
     try {
