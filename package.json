@@ -1,17 +1,27 @@
 {
   "name": "hmenfashion",
   "version": "1.0.0",
-  "description": "",
+  "description": "H Men's Fashion website with Stripe checkout",
   "main": "app.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "local": "vercel dev",
+    "test": "echo \"No tests yet\" && exit 0"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "mens-fashion",
+    "ecommerce",
+    "stripe",
+    "vercel"
+  ],
+  "author": "H Men's Fashion",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
+    "@vercel/blob": "^1.0.2",
     "mongodb": "^7.1.0",
     "stripe": "^20.4.0"
+  },
+  "devDependencies": {
+    "vercel": "^48.12.1"
   }
 }
