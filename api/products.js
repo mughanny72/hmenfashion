@@ -3,10 +3,10 @@
 //   GET    /api/products         -> public, returns every product
 //   POST   /api/products         -> admin-key required, creates or updates one product (upsert by id)
 //   DELETE /api/products?id=xxx  -> admin-key required, deletes one product
-const connectToDatabase = require("../lib/mongodb");
-const requireAdmin = require("../lib/adminAuth");
+import connectToDatabase from "../lib/mongodb.js";
+import requireAdmin from "../lib/adminAuth.js";
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-admin-key, Authorization");
@@ -51,4 +51,4 @@ module.exports = async (req, res) => {
     console.error("products api error:", e);
     return res.status(500).json({ ok: false, error: "Server error", detail: String((e && e.message) || e) });
   }
-};
+}

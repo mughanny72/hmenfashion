@@ -1,8 +1,8 @@
 // api/test-mongo.js
 // Quick diagnostic: confirms MONGODB_URI actually connects. Safe to delete after testing.
-const { MongoClient } = require("mongodb");
+import { MongoClient } from "mongodb";
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   try {
     if (!process.env.MONGODB_URI) {
       return res.status(500).json({ ok: false, error: "MONGODB_URI is not set." });
@@ -23,4 +23,4 @@ module.exports = async (req, res) => {
     console.error("test-mongo error:", e);
     return res.status(500).json({ ok: false, error: String(e?.message || e) });
   }
-};
+}

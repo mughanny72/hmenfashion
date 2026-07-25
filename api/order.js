@@ -1,6 +1,6 @@
 // api/order.js
-const { MongoClient } = require("mongodb");
-const Stripe = require("stripe");
+import { MongoClient } from "mongodb";
+import Stripe from "stripe";
 
 // Cache DB connection across serverless calls
 let cached = global._mongoOrder;
@@ -35,7 +35,7 @@ function lower(v) {
   return s(v).trim().toLowerCase();
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   // Basic CORS (safe for GET)
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
@@ -69,7 +69,7 @@ module.exports = async (req, res) => {
       expand: ["payment_intent", "customer", "subscription"],
     });
 
-    // If not complete/paid yet, don’t save
+    // If not complete/paid yet, don't save
     const paid = session.payment_status === "paid";
     const complete = session.status === "complete";
     if (!paid && !complete) {
@@ -153,4 +153,4 @@ module.exports = async (req, res) => {
       detail: String(e?.message || e),
     });
   }
-};
+}

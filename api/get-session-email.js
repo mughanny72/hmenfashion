@@ -1,11 +1,11 @@
 // api/get-session-email.js
-const Stripe = require("stripe");
+import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2024-06-20",
 });
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   try {
     const sessionId = String(req.query.session_id || "").trim();
     if (!sessionId) {
@@ -24,4 +24,4 @@ module.exports = async (req, res) => {
     console.error("get-session-email error:", e);
     return res.status(500).json({ ok: false, error: "Server error", detail: String(e?.message || e) });
   }
-};
+}

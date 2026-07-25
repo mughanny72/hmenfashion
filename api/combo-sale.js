@@ -1,8 +1,8 @@
 // api/combo-sale.js
 // Called after a successful combo purchase to increment soldCount
 // and generate a 50% Stripe coupon for the creator when soldCount hits 10
-const { MongoClient, ObjectId } = require("mongodb");
-const Stripe = require("stripe");
+import { MongoClient, ObjectId } from "mongodb";
+import Stripe from "stripe";
 
 const client = new MongoClient(process.env.MONGODB_URI);
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2024-06-20" });
@@ -15,7 +15,7 @@ function getET(date) {
   }) + " ET";
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -78,4 +78,4 @@ module.exports = async (req, res) => {
     console.error("combo-sale error:", e);
     return res.status(500).json({ ok: false, error: String(e?.message || e) });
   }
-};
+}

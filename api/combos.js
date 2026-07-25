@@ -1,6 +1,6 @@
 // api/combos.js
 // Handles: POST /api/combos (save named combo) | GET /api/combos (leaderboard)
-const { MongoClient } = require("mongodb");
+import { MongoClient } from "mongodb";
 
 const client = new MongoClient(process.env.MONGODB_URI);
 
@@ -21,7 +21,7 @@ function makeSignature(selections) {
   );
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -109,4 +109,4 @@ module.exports = async (req, res) => {
     console.error("combos error:", e);
     return res.status(500).json({ ok: false, error: String(e?.message || e) });
   }
-};
+}

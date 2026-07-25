@@ -6,10 +6,10 @@
 // Requires a Blob store connected to this Vercel project (Vercel Dashboard -> Storage ->
 // Create Database -> Blob -> connect to this project). That automatically adds the
 // BLOB_READ_WRITE_TOKEN environment variable this code needs — no manual token copying.
-const { put } = require("@vercel/blob");
-const requireAdmin = require("../lib/adminAuth");
+import { put } from "@vercel/blob";
+import requireAdmin from "../lib/adminAuth.js";
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-admin-key, Authorization");
@@ -49,4 +49,4 @@ module.exports = async (req, res) => {
     console.error("upload-image error:", e);
     return res.status(500).json({ ok: false, error: "Server error", detail: String((e && e.message) || e) });
   }
-};
+}
