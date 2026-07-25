@@ -130,6 +130,17 @@ const LS = {
 
 /* =========================
    PRODUCTS (add subcat to make sidebar filtering work)
+
+   ─── HOW TO ADD A NEW OUTFIT ───
+   Copy any block below, paste it inside this array, change the values.
+   Required fields:  id, title, category, subcat, price, desc
+   Optional visuals (pick ONE — first one wins):
+     image: "./images/your-photo.jpg"   ← put file in /images
+     video: "./videos/your-clip.mp4"    ← put file in /videos (autoplay, muted, loops)
+     bg:    "linear-gradient(...)"      ← CSS gradient fallback
+
+   ─── HOW TO DELETE AN OUTFIT ───
+   Delete the entire { ... }, block. That's it.
 ========================= */
 const PRODUCTS = [
   {
@@ -139,6 +150,8 @@ const PRODUCTS = [
     subcat: "SUIT_BUSINESS",
     price: 249,
     desc: "Clean silhouette, versatile navy tone. Perfect for work, weddings, and events.",
+    // image: "./images/suit-navy.jpg",   // ← drop a photo into /images and uncomment
+    // video: "./videos/suit-navy.mp4",   // ← drop a clip into /videos and uncomment
     bg: "linear-gradient(135deg, rgba(231,195,106,.25), rgba(255,255,255,.06)), radial-gradient(120px 120px at 30% 20%, rgba(231,195,106,.30), transparent 60%), linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.50))"
   },
   {
@@ -187,6 +200,19 @@ const PRODUCTS = [
     bg: "linear-gradient(135deg, rgba(255,255,255,.06), rgba(0,0,0,.35)), radial-gradient(120px 120px at 40% 20%, rgba(231,195,106,.14), transparent 60%)"
   }
 ];
+
+/* Override defaults with saved products from the in-browser Admin Panel */
+const PRODUCTS_LS_KEY = "HMEN_PRODUCTS_V1";
+(function loadSavedProducts(){
+  try {
+    const raw = localStorage.getItem(PRODUCTS_LS_KEY);
+    if (!raw) return;
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr) || !arr.length) return;
+    PRODUCTS.length = 0;
+    PRODUCTS.push(...arr);
+  } catch(_) {}
+})();
 
 /* =========================
    CATEGORY TREE (editable, saved)
@@ -955,8 +981,19 @@ function renderProducts(){
   filtered.forEach(p => {
     const card = document.createElement("article");
     card.className = "card";
+
+    // ── visual: video > image > gradient bg ──
+    let visual = "";
+    if (p.video) {
+      visual = `<video class="pmedia" src="${p.video}" autoplay loop muted playsinline preload="metadata"></video>`;
+    } else if (p.image) {
+      visual = `<img class="pmedia" src="${p.image}" alt="${escapeHtml(p.title)}" loading="lazy" />`;
+    }
+
+    const pimgStyle = (p.video || p.image) ? "" : `style="background-image:${p.bg}"`;
+
     card.innerHTML = `
-      <div class="pimg" style="background-image:${p.bg}" role="button" tabindex="0" aria-label="View ${escapeHtml(p.title)}"></div>
+      <div class="pimg" ${pimgStyle} role="button" tabindex="0" aria-label="View ${escapeHtml(p.title)}">${visual}</div>
       <div class="pbody">
         <div class="ptitle">${escapeHtml(p.title)}</div>
         <div class="pmeta">
@@ -1278,7 +1315,19 @@ function openProductModal(productId){
 
   modalProductId = p.id;
 
-  $("#pmImg") && ($("#pmImg").style.backgroundImage = p.bg);
+  // visual: video > image > gradient bg
+  const pmImg = $("#pmImg");
+  if (pmImg) {
+    pmImg.innerHTML = "";
+    pmImg.style.backgroundImage = "";
+    if (p.video) {
+      pmImg.innerHTML = `<video class="pmedia" src="${p.video}" autoplay loop muted playsinline preload="metadata"></video>`;
+    } else if (p.image) {
+      pmImg.innerHTML = `<img class="pmedia" src="${p.image}" alt="${escapeHtml(p.title)}" />`;
+    } else {
+      pmImg.style.backgroundImage = p.bg || "";
+    }
+  }
   $("#pmTitle") && ($("#pmTitle").textContent = p.title);
   $("#pmPrice") && ($("#pmPrice").textContent = money(p.price));
   $("#pmDesc") && ($("#pmDesc").textContent = p.desc);
@@ -1412,35 +1461,16 @@ function setCartHint(msg){
 ========================= */
 function addLookBundle(type){
   const t = String(type || "").toLowerCase();
+  if (!t) return;
 
-  if (t === "business"){
-    addToCart("SUIT_NAVY", { size:"M", qty:1 });
-    addToCart("SHIRT_WHITE", { size:"M", qty:1 });
-    addToCart("LOAFERS_BROWN", { size:"M", qty:1 });
-    return;
+  // Real bundles are built in Admin → Bundles and matched here by their
+  // "Lookbook Slide" slug (business / wedding / casual / evening).
+  if (typeof window.hmfAddBundleBySlug === "function"){
+    const added = window.hmfAddBundleBySlug(t);
+    if (added) return;
   }
 
-  if (t === "wedding"){
-    addToCart("SUIT_NAVY", { size:"M", qty:1 });
-    addToCart("SHIRT_WHITE", { size:"M", qty:1 });
-    addToCart("TIE_SET", { size:"M", qty:1 });
-    return;
-  }
-
-  if (t === "casual"){
-    addToCart("BLAZER_CHAR", { size:"M", qty:1 });
-    addToCart("SHIRT_WHITE", { size:"M", qty:1 });
-    addToCart("BELT_BLACK", { size:"M", qty:1 });
-    return;
-  }
-
-  if (t === "evening"){
-    addToCart("SUIT_NAVY", { size:"M", qty:1 });
-    addToCart("TIE_SET", { size:"M", qty:1 });
-    return;
-  }
-
-  console.warn("Unknown look bundle:", type);
+  alert("This look isn't linked to a bundle yet. In Admin → Bundles, create a bundle and set its \"Lookbook Slide\" to match this look (" + t + ").");
 }
 
 /* =========================
@@ -1601,22 +1631,1071 @@ function addLookBundle(type){
 })();
 /* =========================
    Lookbook "Shop This Look" buttons
+   NOTE: handled inside initLookbook() above (root.addEventListener on
+   the #lookbook section) — that's the single source of truth for
+   .look-add clicks so bundles don't get added to the cart twice.
 ========================= */
-document.addEventListener("click", function(e){
-  const btn = e.target.closest(".look-add");
-  if(!btn) return;
 
-  e.preventDefault();
+/* =========================================================================
+   ADMIN PANEL — add / edit / delete outfits without touching code
+   ─────────────────────────────────────────────────────────────────────────
+   Open with:  the "Admin" button in the sidebar  OR  Ctrl/Cmd + Shift + A
+   All changes save to localStorage in this browser.
+========================================================================= */
+function _adminSaveProducts(){
+  try { localStorage.setItem(PRODUCTS_LS_KEY, JSON.stringify(PRODUCTS)); } catch(_) {}
+}
 
-  const type = String(btn.dataset.bundle || "").trim();
-  if (!type) return;
+function _adminResetDefaults(){
+  if (!confirm("Reset to the default starter outfits?\nThis deletes everything you've added in the admin panel.")) return;
+  try { localStorage.removeItem(PRODUCTS_LS_KEY); } catch(_) {}
+  location.reload();
+}
 
-  addLookBundle(type);
+function _adminEnsureModal(){
+  if (document.getElementById("adminModal")) return;
 
-  try { setCartHint?.("Added full look to cart."); } catch(_){}
+  const modal = document.createElement("div");
+  modal.className = "modal";
+  modal.id = "adminModal";
+  modal.hidden = true;
+  modal.style.display = "none";
+  modal.setAttribute("role", "dialog");
+  modal.setAttribute("aria-modal", "true");
+  modal.setAttribute("aria-label", "Admin Panel");
 
-  document.getElementById("cart")?.scrollIntoView({
-    behavior: "smooth",
-    block: "start"
+  modal.innerHTML = `
+    <div class="modalcard admin-card">
+      <button class="iconbtn modalclose" id="btnCloseAdmin" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+
+      <div class="admin-head">
+        <div>
+          <h3 style="margin:0 0 4px;">Admin Panel</h3>
+          <div class="muted tiny">Add, edit, and delete outfits — saved in your browser.</div>
+        </div>
+        <div class="admin-tabs">
+          <button class="admin-tab is-active" data-tab="list" type="button">All Outfits</button>
+          <button class="admin-tab" data-tab="form" type="button">Add / Edit</button>
+        </div>
+      </div>
+
+      <div class="admin-body">
+        <!-- LIST PANE -->
+        <div class="admin-pane is-active" data-pane="list">
+          <div id="adminList" class="admin-list"></div>
+        </div>
+
+        <!-- FORM PANE -->
+        <div class="admin-pane" data-pane="form">
+          <form id="adminForm" class="admin-form">
+            <input type="hidden" id="afOrigId" />
+
+            <div class="admin-grid2">
+              <label class="admin-lbl">ID (no spaces)
+                <input id="afId" required placeholder="SUIT_BLACK_VELVET" />
+              </label>
+              <label class="admin-lbl">Title
+                <input id="afTitle" required placeholder="Black Velvet Suit" />
+              </label>
+            </div>
+
+            <div class="admin-grid3">
+              <label class="admin-lbl">Category
+                <select id="afCat" class="select" required>
+                  <option value="SUITS">Suits</option>
+                  <option value="CASUAL">Smart Casual</option>
+                  <option value="SHOES">Shoes</option>
+                  <option value="ACCESSORIES">Accessories</option>
+                </select>
+              </label>
+              <label class="admin-lbl">Subcategory key
+                <input id="afSub" required placeholder="SUIT_BUSINESS" />
+              </label>
+              <label class="admin-lbl">Price (USD)
+                <input id="afPrice" type="number" min="0" step="1" required placeholder="249" />
+              </label>
+            </div>
+
+            <label class="admin-lbl">Description
+              <textarea id="afDesc" rows="2" required placeholder="Short, punchy description..."></textarea>
+            </label>
+
+            <div class="admin-grid2">
+              <label class="admin-lbl">Image (path or upload)
+                <input id="afImg" type="text" placeholder="./images/foo.jpg" />
+                <input id="afImgFile" type="file" accept="image/*" class="admin-file" />
+              </label>
+              <label class="admin-lbl">Video path/URL
+                <input id="afVid" type="text" placeholder="./videos/foo.mp4" />
+                <div class="muted tiny" style="margin-top:6px">Tip: drop your .mp4 into /videos and reference it like above.</div>
+              </label>
+            </div>
+
+            <div class="admin-actions">
+              <button type="submit" class="btn primary">Save Outfit</button>
+              <button type="button" class="btn ghost" id="afReset">Clear Form</button>
+              <span class="muted tiny" id="afHint" style="margin-left:auto"></span>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="admin-foot">
+        <button class="btn ghost" id="btnExportProducts" type="button">Export JSON</button>
+        <button class="btn ghost" id="btnResetProducts" type="button">Reset to defaults</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // wire events
+  modal.querySelector("#btnCloseAdmin")?.addEventListener("click", _adminClose);
+  modal.querySelectorAll(".admin-tab").forEach(t => {
+    t.addEventListener("click", () => _adminSwitchTab(t.dataset.tab));
   });
+  modal.querySelector("#adminForm")?.addEventListener("submit", _adminFormSubmit);
+  modal.querySelector("#afReset")?.addEventListener("click", _adminClearForm);
+  modal.querySelector("#afImgFile")?.addEventListener("change", _adminImgFile);
+  modal.querySelector("#btnExportProducts")?.addEventListener("click", _adminExportJSON);
+  modal.querySelector("#btnResetProducts")?.addEventListener("click", _adminResetDefaults);
+}
+
+function _adminOpen(){
+  _adminEnsureModal();
+  _adminSwitchTab("list");
+  const m = document.getElementById("adminModal");
+  if (!m) return;
+  try { hideAllModals(); } catch(_) {}
+  m.hidden = false;
+  m.style.display = "grid";
+  try { showOverlay(true); } catch(_) {}
+  _adminRenderList();
+}
+
+function _adminClose(){
+  const m = document.getElementById("adminModal");
+  if (!m) return;
+  m.hidden = true;
+  m.style.display = "none";
+  try { showOverlay(false); } catch(_) {}
+}
+
+function _adminSwitchTab(name){
+  document.querySelectorAll("#adminModal .admin-tab").forEach(t => {
+    t.classList.toggle("is-active", t.dataset.tab === name);
+  });
+  document.querySelectorAll("#adminModal .admin-pane").forEach(p => {
+    p.classList.toggle("is-active", p.dataset.pane === name);
+  });
+  if (name === "list") _adminRenderList();
+}
+
+function _adminRenderList(){
+  const list = document.querySelector("#adminList");
+  if (!list) return;
+  list.innerHTML = "";
+
+  if (!PRODUCTS.length){
+    list.innerHTML = `<div class="muted" style="padding:14px">No outfits yet. Click "Add / Edit" to create one.</div>`;
+    return;
+  }
+
+  PRODUCTS.forEach((p) => {
+    const row = document.createElement("div");
+    row.className = "admin-row-item";
+
+    let thumb = "";
+    if (p.video) thumb = `<video src="${p.video}" muted playsinline></video>`;
+    else if (p.image) thumb = `<img src="${p.image}" alt="" />`;
+    else thumb = `<div class="admin-thumb-grad" style="background:${p.bg || '#222'}"></div>`;
+
+    row.innerHTML = `
+      <div class="admin-thumb">${thumb}</div>
+      <div class="admin-info">
+        <div class="admin-row-title">${escapeHtml(p.title || "(untitled)")}</div>
+        <div class="muted tiny">${escapeHtml(p.category || "")} • ${escapeHtml(p.id || "")} • $${Number(p.price)||0}</div>
+      </div>
+      <div class="admin-rowbtns">
+        <button class="btn ghost" data-act="edit" type="button">Edit</button>
+        <button class="btn admin-del" data-act="del" type="button">Delete</button>
+      </div>
+    `;
+
+    row.querySelector('[data-act="edit"]').addEventListener("click", () => _adminEdit(p.id));
+    row.querySelector('[data-act="del"]').addEventListener("click", () => _adminDelete(p.id));
+    list.appendChild(row);
+  });
+}
+
+function _adminDelete(id){
+  if (!confirm(`Delete "${id}"?\nThis can't be undone.`)) return;
+  const idx = PRODUCTS.findIndex(p => p.id === id);
+  if (idx < 0) return;
+  PRODUCTS.splice(idx, 1);
+  _adminSaveProducts();
+  _adminRenderList();
+  try { renderProducts(); } catch(_) {}
+}
+
+function _adminEdit(id){
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  _adminSwitchTab("form");
+  document.getElementById("afOrigId").value = p.id || "";
+  document.getElementById("afId").value = p.id || "";
+  document.getElementById("afTitle").value = p.title || "";
+  document.getElementById("afCat").value = p.category || "SUITS";
+  document.getElementById("afSub").value = p.subcat || "";
+  document.getElementById("afPrice").value = p.price || 0;
+  document.getElementById("afDesc").value = p.desc || "";
+  document.getElementById("afImg").value = p.image || "";
+  document.getElementById("afVid").value = p.video || "";
+  document.getElementById("afHint").textContent = "Editing " + p.id;
+}
+
+function _adminClearForm(){
+  const f = document.getElementById("adminForm");
+  if (f) f.reset();
+  document.getElementById("afOrigId").value = "";
+  document.getElementById("afHint").textContent = "";
+}
+
+function _adminImgFile(e){
+  const file = e.target.files?.[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    document.getElementById("afHint").textContent = "Image too large (>2MB). Use a smaller file or paste a path instead.";
+    e.target.value = "";
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    document.getElementById("afImg").value = reader.result;
+    document.getElementById("afHint").textContent = "Image loaded into form.";
+  };
+  reader.readAsDataURL(file);
+}
+
+function _adminFormSubmit(e){
+  e.preventDefault();
+  const orig = (document.getElementById("afOrigId").value || "").trim();
+  const id = (document.getElementById("afId").value || "").trim().toUpperCase().replace(/[^A-Z0-9_]/g, "_");
+  if (!id) return;
+
+  const data = {
+    id,
+    title: (document.getElementById("afTitle").value || "").trim(),
+    category: document.getElementById("afCat").value,
+    subcat: (document.getElementById("afSub").value || "").trim().toUpperCase(),
+    price: Number(document.getElementById("afPrice").value) || 0,
+    desc: (document.getElementById("afDesc").value || "").trim()
+  };
+  const img = (document.getElementById("afImg").value || "").trim();
+  const vid = (document.getElementById("afVid").value || "").trim();
+  if (img) data.image = img;
+  if (vid) data.video = vid;
+  if (!data.image && !data.video){
+    data.bg = "linear-gradient(135deg, rgba(231,195,106,.22), rgba(255,255,255,.06)), radial-gradient(140px 120px at 30% 20%, rgba(231,195,106,.20), transparent 60%)";
+  }
+
+  const hint = document.getElementById("afHint");
+
+  if (orig){
+    const idx = PRODUCTS.findIndex(p => p.id === orig);
+    if (idx >= 0){
+      // if id changed, make sure new one isn't already used elsewhere
+      if (id !== orig && PRODUCTS.some((p, i) => i !== idx && p.id === id)){
+        if (hint) hint.textContent = "That ID is already used. Choose another.";
+        return;
+      }
+      PRODUCTS[idx] = data;
+    } else {
+      PRODUCTS.push(data);
+    }
+  } else {
+    if (PRODUCTS.some(p => p.id === id)){
+      if (hint) hint.textContent = "That ID already exists. Choose another.";
+      return;
+    }
+    PRODUCTS.push(data);
+  }
+
+  _adminSaveProducts();
+  try { renderProducts(); } catch(_) {}
+  if (hint) hint.textContent = orig ? "Saved." : "Outfit added.";
+  _adminClearForm();
+  _adminSwitchTab("list");
+}
+
+function _adminExportJSON(){
+  try {
+    const blob = new Blob([JSON.stringify(PRODUCTS, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "products.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch(_) {}
+}
+
+// Keyboard shortcut (Ctrl/Cmd + Shift + A)
+window.addEventListener("keydown", (e) => {
+  const k = String(e.key || "").toLowerCase();
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && k === "a"){
+    e.preventDefault();
+    _adminOpen();
+  }
+  if (k === "escape"){
+    const m = document.getElementById("adminModal");
+    if (m && !m.hidden) _adminClose();
+  }
+});
+
+/* =========================================================================
+   ADMIN SIGN-IN — password-gated access
+   ─────────────────────────────────────────────────────────────────────────
+   First time: set your admin password.
+   After that: enter it to unlock the admin panel.
+   Password is hashed (SHA-256) in localStorage; login lasts the session.
+========================================================================= */
+const ADMIN_AUTH_KEY   = "HMEN_ADMIN_AUTH";    // sessionStorage flag
+const ADMIN_PWHASH_KEY = "HMEN_ADMIN_PWHASH";  // localStorage hash
+
+async function _adminHash(s){
+  const buf = new TextEncoder().encode(String(s));
+  const hashBuf = await crypto.subtle.digest("SHA-256", buf);
+  return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+function _adminIsAuthed(){
+  try { return sessionStorage.getItem(ADMIN_AUTH_KEY) === "1"; } catch(_) { return false; }
+}
+function _adminHasPassword(){
+  try { return !!localStorage.getItem(ADMIN_PWHASH_KEY); } catch(_) { return false; }
+}
+function _adminLogout(){
+  try { sessionStorage.removeItem(ADMIN_AUTH_KEY); } catch(_) {}
+  _adminClose();
+  _refreshAdminUIState();
+}
+async function _adminTryLogin(pw){
+  if (!_adminHasPassword()){
+    if (!pw || pw.length < 4) return { ok:false, msg:"Choose a password with at least 4 characters." };
+    const h = await _adminHash(pw);
+    try {
+      localStorage.setItem(ADMIN_PWHASH_KEY, h);
+      sessionStorage.setItem(ADMIN_AUTH_KEY, "1");
+    } catch(_) {}
+    return { ok:true, msg:"Admin password created. You're signed in." };
+  }
+  const h = await _adminHash(pw);
+  if (h === localStorage.getItem(ADMIN_PWHASH_KEY)){
+    try { sessionStorage.setItem(ADMIN_AUTH_KEY, "1"); } catch(_) {}
+    return { ok:true, msg:"" };
+  }
+  return { ok:false, msg:"Wrong password." };
+}
+
+function _adminEnsureLoginModal(){
+  if (document.getElementById("adminLoginModal")) return;
+  const m = document.createElement("div");
+  m.className = "modal";
+  m.id = "adminLoginModal";
+  m.hidden = true;
+  m.style.display = "none";
+  m.setAttribute("role", "dialog");
+  m.setAttribute("aria-modal", "true");
+  m.innerHTML = `
+    <div class="modalcard admin-login-card">
+      <button class="iconbtn modalclose" id="btnCloseAdminLogin" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <h3 id="alTitle" style="margin:0 0 6px;">Admin Sign-In</h3>
+      <p class="muted tiny" id="alSub" style="margin:0 0 16px;">Enter your admin password.</p>
+
+      <form id="adminLoginForm" class="admin-form" autocomplete="off">
+        <label class="admin-lbl">Password
+          <input id="alPw" type="password" autocomplete="new-password" required />
+        </label>
+        <label class="admin-lbl" id="alConfirmWrap" hidden>Confirm password
+          <input id="alPw2" type="password" autocomplete="new-password" />
+        </label>
+        <div class="admin-actions">
+          <button class="btn primary" type="submit" id="alSubmit">Sign In</button>
+          <span class="muted tiny" id="alHint" style="margin-left:auto"></span>
+        </div>
+      </form>
+
+      <div class="muted tiny" id="alFooter" style="margin-top:14px;border-top:1px solid var(--border);padding-top:10px;"></div>
+    </div>
+  `;
+  document.body.appendChild(m);
+
+  m.querySelector("#btnCloseAdminLogin").addEventListener("click", _adminLoginClose);
+  m.querySelector("#adminLoginForm").addEventListener("submit", _adminLoginSubmit);
+}
+
+function _adminLoginOpen(){
+  _adminEnsureLoginModal();
+  const isFirstTime = !_adminHasPassword();
+
+  const title = document.getElementById("alTitle");
+  const sub   = document.getElementById("alSub");
+  const submit= document.getElementById("alSubmit");
+  const wrap  = document.getElementById("alConfirmWrap");
+  const foot  = document.getElementById("alFooter");
+  const hint  = document.getElementById("alHint");
+  const pw    = document.getElementById("alPw");
+  const pw2   = document.getElementById("alPw2");
+
+  if (pw)  pw.value  = "";
+  if (pw2) pw2.value = "";
+  if (hint) hint.textContent = "";
+
+  if (isFirstTime){
+    title.textContent = "Create Admin Password";
+    sub.textContent   = "First-time setup: choose a password to lock the admin panel.";
+    submit.textContent = "Create & Sign In";
+    wrap.hidden = false;
+    foot.textContent  = "Tip: choose something you'll remember. There's no password reset — only \"Forget password\" which wipes it from this browser.";
+  } else {
+    title.textContent = "Admin Sign-In";
+    sub.textContent   = "Enter your admin password to manage outfits.";
+    submit.textContent = "Sign In";
+    wrap.hidden = true;
+    foot.innerHTML = `<button class="linkbtn" id="alForget" type="button" style="background:none;border:0;color:#caa24a;cursor:pointer;padding:0;">Forget password (reset on this browser)</button>`;
+    document.getElementById("alForget")?.addEventListener("click", () => {
+      if (!confirm("Forget the admin password on this browser?\nYou'll set a new one next time.")) return;
+      try { localStorage.removeItem(ADMIN_PWHASH_KEY); sessionStorage.removeItem(ADMIN_AUTH_KEY); } catch(_) {}
+      _adminLoginClose();
+      _adminLoginOpen();
+    });
+  }
+
+  try { hideAllModals(); } catch(_) {}
+  const m = document.getElementById("adminLoginModal");
+  m.hidden = false;
+  m.style.display = "grid";
+  try { showOverlay(true); } catch(_) {}
+  setTimeout(() => pw?.focus(), 50);
+}
+
+function _adminLoginClose(){
+  const m = document.getElementById("adminLoginModal");
+  if (!m) return;
+  m.hidden = true;
+  m.style.display = "none";
+  try { showOverlay(false); } catch(_) {}
+}
+
+async function _adminLoginSubmit(e){
+  e.preventDefault();
+  const hint  = document.getElementById("alHint");
+  const pw    = document.getElementById("alPw")?.value || "";
+  const isFirstTime = !_adminHasPassword();
+  if (isFirstTime){
+    const pw2 = document.getElementById("alPw2")?.value || "";
+    if (pw !== pw2){ if (hint) hint.textContent = "Passwords don't match."; return; }
+  }
+  const res = await _adminTryLogin(pw);
+  if (!res.ok){
+    if (hint) hint.textContent = res.msg;
+    return;
+  }
+  _adminLoginClose();
+  _refreshAdminUIState();
+  _adminOpen();
+}
+
+function _refreshAdminUIState(){
+  const authed = _adminIsAuthed();
+  const setVis = (id, vis) => { const el = document.getElementById(id); if (el) el.style.display = vis ? "" : "none"; };
+  setVis("btnAdminLogin",  !authed);
+  setVis("btnOpenAdmin",    authed);
+  setVis("btnAdminLogout",  authed);
+}
+
+// Gate the admin panel behind auth
+const _adminOpenRaw = _adminOpen;
+_adminOpen = function gatedAdminOpen(){
+  if (!_adminIsAuthed()){
+    _adminLoginOpen();
+    return;
+  }
+  _adminOpenRaw();
+};
+
+// Inject Admin Login / Admin Panel / Log Out buttons into the sidebar bottom
+(function _injectAdminButtons(){
+  function tryInject(){
+    const slot = document.querySelector(".side-bottom");
+    if (!slot) return false;
+
+    if (!document.getElementById("btnAdminLogin")){
+      const a = document.createElement("button");
+      a.id = "btnAdminLogin";
+      a.type = "button";
+      a.className = "btn ghost full";
+      a.textContent = "Admin Login";
+      a.style.marginBottom = "8px";
+      a.addEventListener("click", _adminLoginOpen);
+      slot.insertBefore(a, slot.firstChild);
+    }
+    if (!document.getElementById("btnOpenAdmin")){
+      const b = document.createElement("button");
+      b.id = "btnOpenAdmin";
+      b.type = "button";
+      b.className = "btn primary full";
+      b.textContent = "Admin Panel";
+      b.style.marginBottom = "8px";
+      b.addEventListener("click", _adminOpen);
+      slot.insertBefore(b, slot.firstChild);
+    }
+    if (!document.getElementById("btnAdminLogout")){
+      const c = document.createElement("button");
+      c.id = "btnAdminLogout";
+      c.type = "button";
+      c.className = "btn ghost full";
+      c.textContent = "Log out";
+      c.style.marginBottom = "8px";
+      c.addEventListener("click", _adminLogout);
+      slot.insertBefore(c, slot.firstChild);
+    }
+
+    _refreshAdminUIState();
+    return true;
+  }
+  if (!tryInject()){
+    document.addEventListener("DOMContentLoaded", tryInject, { once: true });
+  }
+})();
+
+/* =========================================================================
+   ANNOUNCEMENTS — editable from Admin Panel, dismissible by visitors
+========================================================================= */
+const ANNOUNCE_LS_KEY = "HMEN_ANNOUNCEMENTS_V2";
+const ANNOUNCE_DISMISS_KEY = "HMEN_ANNOUNCE_DISMISSED_V2";
+
+let ANNOUNCEMENTS = [
+  { id: "ann_store",   pill: "Opening Soon", title: "Our new store is opening soon —", body: "H Men's Fashion · Westmoreland Mall · Greensburg, PA", ghost: false },
+  { id: "ann_website", pill: "Heads Up",     title: "Our website is coming soon.",     body: "Stay tuned.", ghost: true }
+];
+
+(function loadAnnouncements(){
+  try {
+    const raw = localStorage.getItem(ANNOUNCE_LS_KEY);
+    if (!raw) return;
+    const arr = JSON.parse(raw);
+    if (Array.isArray(arr)) ANNOUNCEMENTS = arr;
+  } catch(_) {}
+})();
+function _saveAnnouncements(){
+  try { localStorage.setItem(ANNOUNCE_LS_KEY, JSON.stringify(ANNOUNCEMENTS)); } catch(_) {}
+}
+
+function renderAnnouncements(){
+  const list = document.getElementById("splashMessages");
+  if (!list) return;
+  list.innerHTML = "";
+
+  if (!ANNOUNCEMENTS.length) return;
+
+  ANNOUNCEMENTS.forEach(a => {
+    const item = document.createElement("div");
+    item.className = "splash-msg";
+    item.innerHTML = `
+      <div class="splash-msg-pill ${a.ghost ? 'ghost' : ''}">${escapeHtml(a.pill || "")}</div>
+      ${a.title ? `<div class="splash-msg-title">${escapeHtml(a.title)}</div>` : ""}
+      <div class="splash-msg-body">${escapeHtml(a.body || "")}</div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+/* ===== Splash takeover (Coming Soon) ===== */
+const SPLASH_PREVIEW_KEY = "HMEN_SPLASH_PREVIEW"; // sessionStorage flag for admin preview
+
+function _splashShouldShow(){
+  // Admin previewing the site? Hide splash for them.
+  try { if (sessionStorage.getItem(SPLASH_PREVIEW_KEY) === "1") return false; } catch(_) {}
+  return true; // visitors always see splash; admin sees it too unless they hit "Preview Site"
+}
+
+function applySplashState(){
+  const splash = document.getElementById("splash");
+  if (!splash) return;
+  const show = _splashShouldShow();
+  splash.classList.toggle("is-hidden", !show);
+  document.body.classList.toggle("splash-on", show);
+  // mark admin-mode for showing the Preview button
+  const isAdmin = (typeof _adminIsAuthed === "function" && _adminIsAuthed());
+  splash.classList.toggle("is-admin", isAdmin);
+}
+
+(function initSplash(){
+  function init(){
+    // year
+    const y = document.getElementById("splashYear");
+    if (y) y.textContent = String(new Date().getFullYear());
+    renderAnnouncements();
+    applySplashState();
+
+    document.getElementById("splashAdminBtn")?.addEventListener("click", () => {
+      if (typeof _adminLoginOpen === "function") _adminLoginOpen();
+    });
+
+    document.getElementById("splashPreviewBtn")?.addEventListener("click", () => {
+      try { sessionStorage.setItem(SPLASH_PREVIEW_KEY, "1"); } catch(_) {}
+      applySplashState();
+    });
+
+    // Re-evaluate when admin auth changes (poll lightly)
+    setInterval(applySplashState, 1000);
+  }
+  if (document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", init, { once: true });
+  } else {
+    init();
+  }
+})();
+
+// Reset preview on logout so admin sees splash again next session
+(function patchLogoutForSplash(){
+  if (typeof _adminLogout !== "function") return;
+  const orig = _adminLogout;
+  window._adminLogout = function(){
+    try { sessionStorage.removeItem(SPLASH_PREVIEW_KEY); } catch(_) {}
+    orig.apply(this, arguments);
+    applySplashState();
+  };
+})();
+
+/* ========== Admin: Announcements Manager ========== */
+function _annAdminEnsureModal(){
+  if (document.getElementById("annAdminModal")) return;
+  const m = document.createElement("div");
+  m.className = "modal";
+  m.id = "annAdminModal";
+  m.hidden = true;
+  m.style.display = "none";
+  m.setAttribute("role", "dialog");
+  m.setAttribute("aria-modal", "true");
+  m.innerHTML = `
+    <div class="modalcard admin-card">
+      <button class="iconbtn modalclose" id="btnCloseAnnAdmin" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <div class="admin-head">
+        <div>
+          <h3 style="margin:0 0 4px;">Announcements</h3>
+          <div class="muted tiny">Add, edit, and delete the banner messages at the top of the site.</div>
+        </div>
+      </div>
+
+      <div id="annAdminList" class="admin-list"></div>
+
+      <form id="annAdminForm" class="admin-form" style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;">
+        <input type="hidden" id="annOrigId" />
+        <div class="admin-grid3">
+          <label class="admin-lbl">Pill (short label)
+            <input id="annPill" required placeholder="Opening Soon" />
+          </label>
+          <label class="admin-lbl">Title (bold)
+            <input id="annTitle" placeholder="Our new store is opening soon —" />
+          </label>
+          <label class="admin-lbl">Style
+            <select id="annGhost" class="select">
+              <option value="0">Solid gold</option>
+              <option value="1">Outline (ghost)</option>
+            </select>
+          </label>
+        </div>
+        <label class="admin-lbl">Body / details
+          <textarea id="annBody" rows="2" required placeholder="H Men's Fashion · Westmorland Mall · Greensburge PA"></textarea>
+        </label>
+        <div class="admin-actions">
+          <button type="submit" class="btn primary">Save Message</button>
+          <button type="button" class="btn ghost" id="annClear">Clear Form</button>
+          <button type="button" class="btn ghost" id="annResetDismiss">Re-show banner for visitors</button>
+          <span class="muted tiny" id="annHint" style="margin-left:auto"></span>
+        </div>
+      </form>
+    </div>
+  `;
+  document.body.appendChild(m);
+
+  m.querySelector("#btnCloseAnnAdmin").addEventListener("click", _annAdminClose);
+  m.querySelector("#annAdminForm").addEventListener("submit", _annAdminSubmit);
+  m.querySelector("#annClear").addEventListener("click", _annAdminClearForm);
+  m.querySelector("#annResetDismiss").addEventListener("click", () => {
+    try { localStorage.removeItem(ANNOUNCE_DISMISS_KEY); } catch(_) {}
+    renderAnnouncements();
+    const h = document.getElementById("annHint"); if (h) h.textContent = "Banner will show again for everyone.";
+  });
+}
+
+function _annAdminOpen(){
+  if (typeof _adminIsAuthed === "function" && !_adminIsAuthed()){
+    if (typeof _adminLoginOpen === "function") _adminLoginOpen();
+    return;
+  }
+  _annAdminEnsureModal();
+  _annAdminRenderList();
+  _annAdminClearForm();
+  try { hideAllModals(); } catch(_) {}
+  const m = document.getElementById("annAdminModal");
+  m.hidden = false;
+  m.style.display = "grid";
+  try { showOverlay(true); } catch(_) {}
+}
+function _annAdminClose(){
+  const m = document.getElementById("annAdminModal");
+  if (!m) return;
+  m.hidden = true;
+  m.style.display = "none";
+  try { showOverlay(false); } catch(_) {}
+}
+
+function _annAdminRenderList(){
+  const list = document.getElementById("annAdminList");
+  if (!list) return;
+  list.innerHTML = "";
+  if (!ANNOUNCEMENTS.length){
+    list.innerHTML = `<div class="muted" style="padding:14px">No messages yet. Add one below.</div>`;
+    return;
+  }
+  ANNOUNCEMENTS.forEach((a) => {
+    const row = document.createElement("div");
+    row.className = "admin-row-item";
+    row.innerHTML = `
+      <div class="admin-thumb" style="display:flex;align-items:center;justify-content:center;background:rgba(231,195,106,.12);color:#e7c36a;font-weight:800;font-size:11px;padding:6px;text-align:center;">${escapeHtml(a.pill || "")}</div>
+      <div class="admin-info">
+        <div class="admin-row-title">${escapeHtml(a.title || "(no title)")}</div>
+        <div class="muted tiny">${escapeHtml(a.body || "")}</div>
+      </div>
+      <div class="admin-rowbtns">
+        <button class="btn ghost" data-act="edit" type="button">Edit</button>
+        <button class="btn admin-del" data-act="del" type="button">Delete</button>
+      </div>
+    `;
+    row.querySelector('[data-act="edit"]').addEventListener("click", () => _annAdminEdit(a.id));
+    row.querySelector('[data-act="del"]').addEventListener("click", () => _annAdminDelete(a.id));
+    list.appendChild(row);
+  });
+}
+
+function _annAdminEdit(id){
+  const a = ANNOUNCEMENTS.find(x => x.id === id);
+  if (!a) return;
+  document.getElementById("annOrigId").value = a.id;
+  document.getElementById("annPill").value = a.pill || "";
+  document.getElementById("annTitle").value = a.title || "";
+  document.getElementById("annBody").value = a.body || "";
+  document.getElementById("annGhost").value = a.ghost ? "1" : "0";
+  document.getElementById("annHint").textContent = "Editing message — make changes and click Save.";
+}
+function _annAdminClearForm(){
+  document.getElementById("annOrigId").value = "";
+  document.getElementById("annPill").value = "";
+  document.getElementById("annTitle").value = "";
+  document.getElementById("annBody").value = "";
+  document.getElementById("annGhost").value = "0";
+  document.getElementById("annHint").textContent = "";
+}
+function _annAdminDelete(id){
+  if (!confirm("Delete this message?")) return;
+  const idx = ANNOUNCEMENTS.findIndex(a => a.id === id);
+  if (idx < 0) return;
+  ANNOUNCEMENTS.splice(idx, 1);
+  _saveAnnouncements();
+  _annAdminRenderList();
+  renderAnnouncements();
+}
+function _annAdminSubmit(e){
+  e.preventDefault();
+  const orig = document.getElementById("annOrigId").value.trim();
+  const data = {
+    id: orig || ("ann_" + Math.random().toString(36).slice(2, 8)),
+    pill: document.getElementById("annPill").value.trim(),
+    title: document.getElementById("annTitle").value.trim(),
+    body: document.getElementById("annBody").value.trim(),
+    ghost: document.getElementById("annGhost").value === "1"
+  };
+  const hint = document.getElementById("annHint");
+  if (orig){
+    const idx = ANNOUNCEMENTS.findIndex(a => a.id === orig);
+    if (idx >= 0) ANNOUNCEMENTS[idx] = data;
+    else ANNOUNCEMENTS.push(data);
+  } else {
+    ANNOUNCEMENTS.push(data);
+  }
+  _saveAnnouncements();
+  _annAdminRenderList();
+  renderAnnouncements();
+  _annAdminClearForm();
+  // Re-show banner for everyone after edits
+  try { localStorage.removeItem(ANNOUNCE_DISMISS_KEY); } catch(_) {}
+  if (hint) hint.textContent = orig ? "Saved." : "Message added.";
+}
+
+// Inject "Announcements" button. Visible to all; clicking gates by admin auth.
+(function _injectAnnButton(){
+  function tryInject(){
+    const slot = document.querySelector(".side-bottom");
+    if (!slot) return false;
+    if (document.getElementById("btnOpenAnn")) return true;
+    const btn = document.createElement("button");
+    btn.id = "btnOpenAnn";
+    btn.type = "button";
+    btn.className = "btn ghost full";
+    btn.textContent = "Announcements";
+    btn.style.marginBottom = "8px";
+    btn.addEventListener("click", _annAdminOpen);
+    slot.insertBefore(btn, slot.firstChild);
+
+    // Toggle visibility based on admin auth (poll lightly — covers login/logout)
+    function refreshVis(){
+      btn.style.display = (typeof _adminIsAuthed === "function" && _adminIsAuthed()) ? "" : "none";
+    }
+    refreshVis();
+    setInterval(refreshVis, 1000);
+    return true;
+  }
+  if (!tryInject()){
+    document.addEventListener("DOMContentLoaded", tryInject, { once: true });
+  }
+})();
+/* =========================================================
+   H MEN'S FASHION — OUTFITS WITH SIZE / COLOR / FIT / CART
+   Safe block: paste at the bottom of app.js
+========================================================= */
+
+const HMF_OUTFITS = [
+  {
+    id: "OUTFIT_BUSINESS_NAVY",
+    name: "Business Authority Outfit",
+    category: "SUITS",
+    price: 249.99,
+    image: "./images/outfit-business-navy.jpg",
+    description: "Navy suit look with dress shirt, tie, belt, and shoes. Sharp business style.",
+    sizes: ["36R", "38R", "40R", "42R", "44R", "46R", "48R", "50R", "52R"],
+    colors: ["Navy", "Black", "Charcoal", "Grey"],
+    fits: ["Slim Fit", "Modern Fit", "Classic Fit"]
+  },
+  {
+    id: "OUTFIT_WEDDING_BLACK",
+    name: "Wedding Elegance Outfit",
+    category: "SUITS",
+    price: 299.99,
+    image: "./images/outfit-wedding-black.jpg",
+    description: "Formal wedding-ready outfit with elegant suit, shirt, tie, belt, and shoes.",
+    sizes: ["36R", "38R", "40R", "42R", "44R", "46R", "48R", "50R", "52R"],
+    colors: ["Black", "Dark Blue", "Burgundy", "White"],
+    fits: ["Slim Fit", "Modern Fit", "Classic Fit"]
+  },
+  {
+    id: "OUTFIT_SMART_CASUAL",
+    name: "Smart Casual Weekend Outfit",
+    category: "CASUAL",
+    price: 149.99,
+    image: "./images/outfit-smart-casual.jpg",
+    description: "Blazer, casual shirt, pants, belt, and shoes. Comfortable but still sharp.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    colors: ["Black", "Beige", "Navy", "Olive", "Grey"],
+    fits: ["Slim Fit", "Modern Fit", "Relaxed Fit"]
+  },
+  {
+    id: "OUTFIT_EVENING_BLACK",
+    name: "Evening Confidence Outfit",
+    category: "CASUAL",
+    price: 179.99,
+    image: "./images/outfit-evening-black.jpg",
+    description: "Dark evening outfit with bold style. Perfect for dinner, events, and nights out.",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    colors: ["Black", "Charcoal", "Burgundy"],
+    fits: ["Slim Fit", "Modern Fit"]
+  }
+];
+
+let hmfCart = JSON.parse(localStorage.getItem("hmfCart") || "[]");
+
+function money(n) {
+  return "$" + Number(n || 0).toFixed(2);
+}
+
+function saveHmfCart() {
+  localStorage.setItem("hmfCart", JSON.stringify(hmfCart));
+}
+
+function optionHtml(arr) {
+  return arr.map(v => `<option value="${v}">${v}</option>`).join("");
+}
+
+function renderHmfOutfits() {
+  const grid = document.getElementById("productGrid");
+  if (!grid) return;
+
+  grid.innerHTML = HMF_OUTFITS.map(item => `
+    <div class="product-card hmf-outfit-card" data-category="${item.category}">
+      <div class="product-img hmf-outfit-img" style="background-image:url('${item.image}')">
+        <div class="hmf-img-fallback">${item.name}</div>
+      </div>
+
+      <div class="product-body">
+        <div class="pillrow">
+          <span class="pill">${item.category}</span>
+          <span class="pill">Complete Outfit</span>
+        </div>
+
+        <h3>${item.name}</h3>
+        <p class="muted">${item.description}</p>
+
+        <div class="price big">${money(item.price)}</div>
+
+        <div class="hmf-options">
+          <label>
+            Size
+            <select id="size_${item.id}" class="select">
+              ${optionHtml(item.sizes)}
+            </select>
+          </label>
+
+          <label>
+            Color
+            <select id="color_${item.id}" class="select">
+              ${optionHtml(item.colors)}
+            </select>
+          </label>
+
+          <label>
+            Fit Type
+            <select id="fit_${item.id}" class="select">
+              ${optionHtml(item.fits)}
+            </select>
+          </label>
+        </div>
+
+        <button class="btn primary full hmf-add-btn" type="button" onclick="addHmfOutfitToCart('${item.id}')">
+          Add to Cart
+        </button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function addHmfOutfitToCart(id) {
+  const item = HMF_OUTFITS.find(x => x.id === id);
+  if (!item) return;
+
+  const size = document.getElementById("size_" + id)?.value || "";
+  const color = document.getElementById("color_" + id)?.value || "";
+  const fit = document.getElementById("fit_" + id)?.value || "";
+
+  const cartKey = `${id}|${size}|${color}|${fit}`;
+
+  const existing = hmfCart.find(x => x.cartKey === cartKey);
+
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    hmfCart.push({
+      cartKey,
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      size,
+      color,
+      fit,
+      qty: 1
+    });
+  }
+
+  saveHmfCart();
+  renderHmfCart();
+
+  const cartSection = document.getElementById("cart");
+  if (cartSection) cartSection.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function changeHmfQty(cartKey, change) {
+  const item = hmfCart.find(x => x.cartKey === cartKey);
+  if (!item) return;
+
+  item.qty += change;
+
+  if (item.qty <= 0) {
+    hmfCart = hmfCart.filter(x => x.cartKey !== cartKey);
+  }
+
+  saveHmfCart();
+  renderHmfCart();
+}
+
+function removeHmfCartItem(cartKey) {
+  hmfCart = hmfCart.filter(x => x.cartKey !== cartKey);
+  saveHmfCart();
+  renderHmfCart();
+}
+
+function renderHmfCart() {
+  const cartItems = document.getElementById("cartItems");
+  const cartTotal = document.getElementById("cartTotal");
+  const badge = document.getElementById("cartCountBadge");
+  const hint = document.getElementById("cartHint");
+
+  if (!cartItems || !cartTotal) return;
+
+  const totalQty = hmfCart.reduce((sum, item) => sum + item.qty, 0);
+  const total = hmfCart.reduce((sum, item) => sum + item.price * item.qty, 0);
+
+  if (badge) badge.textContent = totalQty;
+  cartTotal.textContent = money(total);
+
+  if (!hmfCart.length) {
+    cartItems.innerHTML = `<div class="muted">Your cart is empty.</div>`;
+    if (hint) hint.textContent = "Choose size, color, and fit type, then add an outfit.";
+    return;
+  }
+
+  cartItems.innerHTML = hmfCart.map(item => `
+    <div class="hmf-cart-row">
+      <div>
+        <strong>${item.name}</strong>
+        <div class="muted tiny">
+          Size: ${item.size} • Color: ${item.color} • Fit: ${item.fit}
+        </div>
+        <div class="muted tiny">
+          ${money(item.price)} each
+        </div>
+      </div>
+
+      <div class="hmf-cart-controls">
+        <button class="iconbtn" type="button" onclick="changeHmfQty('${item.cartKey}', -1)">−</button>
+        <strong>${item.qty}</strong>
+        <button class="iconbtn" type="button" onclick="changeHmfQty('${item.cartKey}', 1)">+</button>
+        <button class="btn ghost" type="button" onclick="removeHmfCartItem('${item.cartKey}')">Remove</button>
+      </div>
+    </div>
+  `).join("");
+
+  if (hint) hint.textContent = "Cart saves automatically.";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderHmfOutfits();
+  renderHmfCart();
+
+  const clearBtn = document.getElementById("btnClearCart");
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      hmfCart = [];
+      saveHmfCart();
+      renderHmfCart();
+    });
+  }
 });

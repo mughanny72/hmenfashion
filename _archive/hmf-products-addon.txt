@@ -1,0 +1,143 @@
+/* =========================================================
+   H MEN'S FASHION — ADMIN PRODUCTS ADDON
+   Add this script AFTER app.js in index.html:
+   <script src="./hmf-products-addon.js"></script>
+========================================================= */
+(function(){
+  const PRODUCT_KEY = "HMF_ADMIN_PRODUCTS";
+  const CART_KEY = "HMF_ADMIN_CART";
+
+  const $ = id => document.getElementById(id);
+  const money = n => "$" + Number(n || 0).toFixed(2);
+  const getProducts = () => JSON.parse(localStorage.getItem(PRODUCT_KEY) || "[]");
+  const getCart = () => JSON.parse(localStorage.getItem(CART_KEY) || "[]");
+  const saveCart = cart => localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  const options = arr => (arr || []).map(x => `<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join("");
+
+  function escapeHtml(value){
+    return String(value ?? "").replace(/[&<>'"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[ch]));
+  }
+
+  function injectStyles(){
+    if(document.getElementById("hmfAdminProductStyles")) return;
+    const style = document.createElement("style");
+    style.id = "hmfAdminProductStyles";
+    style.textContent = `
+      .hmf-admin-card{overflow:hidden;display:flex;flex-direction:column;gap:12px;border:1px solid rgba(255,255,255,.10);border-radius:22px;padding:14px;background:rgba(255,255,255,.035)}
+      .hmf-admin-img{height:260px;border-radius:18px;background:#101219 center/cover no-repeat;border:1px solid rgba(255,255,255,.08)}
+      .hmf-admin-title{font-weight:900;font-size:18px;margin:4px 0}.hmf-admin-desc{min-height:42px}.hmf-admin-options{display:grid;grid-template-columns:1fr;gap:10px;margin:8px 0}.hmf-admin-options label{display:grid;gap:6px;font-size:12px;color:var(--muted);font-weight:800}
+      .hmf-cart-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.08)}.hmf-cart-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}.hmf-empty{padding:18px;color:var(--muted);text-align:center;border:1px dashed rgba(255,255,255,.12);border-radius:16px}
+      @media(min-width:700px){.hmf-admin-options{grid-template-columns:repeat(3,1fr)}}`;
+    document.head.appendChild(style);
+  }
+
+  function renderProducts(){
+    injectStyles();
+    const grid = $("productGrid");
+    if(!grid) return;
+
+    const products = getProducts();
+    if(!products.length){
+      grid.innerHTML = `<div class="hmf-empty">No outfits added yet. Open <strong>admin.html</strong> to add your first outfit.</div>`;
+      renderCart();
+      return;
+    }
+
+    grid.innerHTML = products.map(p => `
+      <article class="hmf-admin-card" data-category="${escapeHtml(p.category)}">
+        <div class="hmf-admin-img" style="background-image:url('${p.image}')"></div>
+        <div>
+          <div class="pillrow"><span class="pill">${escapeHtml(p.category)}</span><span class="pill">Complete Outfit</span></div>
+          <div class="hmf-admin-title">${escapeHtml(p.name)}</div>
+          <p class="muted hmf-admin-desc">${escapeHtml(p.description)}</p>
+          <div class="price big">${money(p.price)}</div>
+          <div class="hmf-admin-options">
+            <label>Size<select class="select" id="size_${p.id}">${options(p.sizes)}</select></label>
+            <label>Color<select class="select" id="color_${p.id}">${options(p.colors)}</select></label>
+            <label>Fit Type<select class="select" id="fit_${p.id}">${options(p.fits)}</select></label>
+          </div>
+          <button class="btn primary full" type="button" onclick="HMF_ADMIN_STORE.addToCart('${p.id}')">Add to Cart</button>
+        </div>
+      </article>`).join("");
+
+    renderCart();
+  }
+
+  function addToCart(id){
+    const products = getProducts();
+    const p = products.find(x => x.id === id);
+    if(!p) return;
+    const size = $("size_" + id)?.value || "";
+    const color = $("color_" + id)?.value || "";
+    const fit = $("fit_" + id)?.value || "";
+    const key = [id,size,color,fit].join("|");
+    const cart = getCart();
+    const found = cart.find(x => x.key === key);
+    if(found) found.qty += 1;
+    else cart.push({key,id:p.id,name:p.name,price:p.price,size,color,fit,qty:1});
+    saveCart(cart);
+    renderCart();
+    $("cart")?.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  function changeQty(key, delta){
+    let cart = getCart();
+    const item = cart.find(x => x.key === key);
+    if(!item) return;
+    item.qty += delta;
+    if(item.qty <= 0) cart = cart.filter(x => x.key !== key);
+    saveCart(cart);
+    renderCart();
+  }
+
+  function removeItem(key){
+    saveCart(getCart().filter(x => x.key !== key));
+    renderCart();
+  }
+
+  function clearCart(){
+    saveCart([]);
+    renderCart();
+  }
+
+  function renderCart(){
+    const cartItems = $("cartItems");
+    const cartTotal = $("cartTotal");
+    const badge = $("cartCountBadge");
+    const hint = $("cartHint");
+    if(!cartItems || !cartTotal) return;
+    const cart = getCart();
+    const qty = cart.reduce((s,x)=>s + Number(x.qty || 0),0);
+    const total = cart.reduce((s,x)=>s + Number(x.price || 0) * Number(x.qty || 0),0);
+    if(badge) badge.textContent = qty;
+    cartTotal.textContent = money(total);
+    if(!cart.length){
+      cartItems.innerHTML = `<div class="hmf-empty">Your cart is empty.</div>`;
+      if(hint) hint.textContent = "Choose size, color, and fit type, then add an outfit.";
+      return;
+    }
+    cartItems.innerHTML = cart.map(item => `
+      <div class="hmf-cart-row">
+        <div>
+          <strong>${escapeHtml(item.name)}</strong>
+          <div class="muted tiny">Size: ${escapeHtml(item.size)} • Color: ${escapeHtml(item.color)} • Fit: ${escapeHtml(item.fit)}</div>
+          <div class="muted tiny">${money(item.price)} each</div>
+        </div>
+        <div class="hmf-cart-controls">
+          <button class="iconbtn" type="button" onclick="HMF_ADMIN_STORE.changeQty('${escapeHtml(item.key)}',-1)">−</button>
+          <strong>${item.qty}</strong>
+          <button class="iconbtn" type="button" onclick="HMF_ADMIN_STORE.changeQty('${escapeHtml(item.key)}',1)">+</button>
+          <button class="btn ghost" type="button" onclick="HMF_ADMIN_STORE.removeItem('${escapeHtml(item.key)}')">Remove</button>
+        </div>
+      </div>`).join("");
+    if(hint) hint.textContent = "Cart saves automatically.";
+  }
+
+  window.HMF_ADMIN_STORE = {renderProducts, renderCart, addToCart, changeQty, removeItem, clearCart};
+
+  document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(renderProducts, 50);
+    const clearBtn = $("btnClearCart");
+    if(clearBtn) clearBtn.addEventListener("click", clearCart);
+  });
+})();

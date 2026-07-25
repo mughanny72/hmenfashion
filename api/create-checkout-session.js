@@ -1,129 +1,63 @@
-// api/create-checkout-session.js
-const Stripe = require("stripe");
+import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-06-20",
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-function getBaseUrl() {
-  // ✅ Always redirect back to your main domain
-  return "https://hmenfashion.com";
+function clean(value, max = 120) {
+  return String(value || "").replace(/[<>]/g, "").trim().slice(0, max);
 }
 
-module.exports = async (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+function cents(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return Math.round(n * 100);
+}
 
-  if (req.method === "OPTIONS") return res.status(200).end();
-  if (req.method !== "POST")
-    return res.status(405).json({ error: "Method not allowed" });
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ ok: false, error: "Method not allowed" });
+  }
 
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
-      return res.status(500).json({ error: "Missing STRIPE_SECRET_KEY in env." });
+      return res.status(500).json({ ok: false, error: "Missing STRIPE_SECRET_KEY" });
     }
 
-    const baseUrl = getBaseUrl();
+    const origin = process.env.SITE_URL || req.headers.origin || `https://${req.headers.host}`;
+    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    const cart = Array.isArray(body?.cart) ? body.cart : [];
 
-    // ✅ INPUTS:
-    // kind: "subscription" OR "payment"
-    // customerEmail: optional
-    // items: required for payment
-    const { kind = "subscription", customerEmail, items = [] } = req.body || {};
+    if (!cart.length) return res.status(400).json({ ok: false, error: "Cart is empty" });
+    if (cart.length > 100) return res.status(400).json({ ok: false, error: "Too many items" });
 
-    // ✅ Normalize email
-    const email =
-      typeof customerEmail === "string" && customerEmail.includes("@")
-        ? customerEmail.trim().toLowerCase()
-        : "";
+    const line_items = cart.map((item) => {
+      const unit_amount = cents(item.price);
+      if (!unit_amount) throw new Error("Invalid item price");
 
-    // ✅ Common checkout collection settings
-    // These increase the chance you never “miss” customer details.
-    const common = {
-      // Prefill email if provided
-      customer_email: email || undefined,
-
-      // Ask for phone (useful for shipping + delivery)
-      phone_number_collection: { enabled: true },
-
-      // Force billing address collection (good for receipts + disputes)
-      billing_address_collection: "required",
-
-      // Success/cancel
-      success_url: `${baseUrl}/success.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/cancel.html`,
-
-      // Always include metadata (safe + helpful)
-      metadata: {
-        site: "hmenfashion.com",
-        kind,
-        email: email || "",
-      },
-    };
-
-    // =========================
-    // A) SUBSCRIPTION checkout
-    // =========================
-    if (kind === "subscription") {
-      const priceId = process.env.STRIPE_SUBSCRIPTION_PRICE_ID;
-      if (!priceId) {
-        return res.status(500).json({
-          error: "Missing STRIPE_SUBSCRIPTION_PRICE_ID in env.",
-        });
-      }
-
-      const session = await stripe.checkout.sessions.create({
-        mode: "subscription",
-        payment_method_types: ["card"],
-
-        // Collect shipping address ONLY if you plan to ship member kits/physical items.
-        // If you don't need shipping for subscription, you can delete this block.
-        // shipping_address_collection: { allowed_countries: ["US"] },
-
-        line_items: [{ price: priceId, quantity: 1 }],
-
-        ...common,
-
-        metadata: {
-          ...common.metadata,
-          plan: "membership",
-        },
-      });
-
-      return res.status(200).json({ url: session.url });
-    }
-
-    // =========================
-    // B) ONE-TIME PAYMENT checkout
-    // =========================
-    if (!Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({
-        error: "Missing items for payment checkout. Send items: [{name, unitAmount, qty}]",
-      });
-    }
-
-    const line_items = items.map((it) => {
-      const name = String(it.name || "").trim() || "Item";
-      const qty = Number(it.qty || 1);
-      const unitAmount = Number(it.unitAmount || 0); // cents
-
-      if (!Number.isFinite(qty) || qty < 1) throw new Error("Invalid qty in items");
-      if (!Number.isFinite(unitAmount) || unitAmount < 50)
-        throw new Error("Invalid unitAmount in items (must be >= 50 cents)");
+      const description = [
+        item.styleNumber ? `Style: ${clean(item.styleNumber, 40)}` : "",
+        item.suitSize ? `Jacket/Suit: ${clean(item.suitSize, 40)}` : "",
+        item.shirtSize ? `Shirt: ${clean(item.shirtSize, 40)}` : "",
+        item.pantsSize ? `Pants: ${clean(item.pantsSize, 40)}` : "",
+        item.shoeSize ? `Shoes: ${clean(item.shoeSize, 40)}` : "",
+        item.beltSize ? `Belt: ${clean(item.beltSize, 40)}` : "",
+        item.color ? `Color: ${clean(item.color, 40)}` : "",
+        item.fit ? `Fit: ${clean(item.fit, 40)}` : ""
+      ].filter(Boolean).join(" • ");
 
       return {
-        quantity: Math.round(qty),
+        quantity: Math.max(1, Math.min(99, Number(item.qty || 1))),
         price_data: {
           currency: "usd",
-          unit_amount: Math.round(unitAmount),
+          unit_amount,
           product_data: {
-            name,
+            name: clean(item.name || "H Men's Fashion item"),
+            description: description || "H Men's Fashion",
             metadata: {
-              sku: it.sku ? String(it.sku) : "",
-            },
-          },
-        },
+              local_id: clean(item.id, 80),
+              cart_key: clean(item.cartKey, 250)
+            }
+          }
+        }
       };
     });
 
@@ -131,50 +65,16 @@ module.exports = async (req, res) => {
       mode: "payment",
       payment_method_types: ["card"],
       line_items,
-
-      // ✅ Shipping address collection (for a real store checkout)
-      shipping_address_collection: {
-        allowed_countries: ["US"],
-      },
-
-      // ✅ Shipping options
-      shipping_options: [
-        {
-          shipping_rate_data: {
-            type: "fixed_amount",
-            fixed_amount: { amount: 995, currency: "usd" },
-            display_name: "Standard Shipping (3–5 days)",
-            delivery_estimate: {
-              minimum: { unit: "business_day", value: 3 },
-              maximum: { unit: "business_day", value: 5 },
-            },
-          },
-        },
-        {
-          shipping_rate_data: {
-            type: "fixed_amount",
-            fixed_amount: { amount: 1995, currency: "usd" },
-            display_name: "Express Shipping (1–2 days)",
-            delivery_estimate: {
-              minimum: { unit: "business_day", value: 1 },
-              maximum: { unit: "business_day", value: 2 },
-            },
-          },
-        },
-      ],
-
-      ...common,
-
-      metadata: {
-        ...common.metadata,
-        // Store a simple cart summary in metadata (keep it small)
-        items_count: String(items.length),
-      },
+      billing_address_collection: "auto",
+      shipping_address_collection: { allowed_countries: ["US"] },
+      phone_number_collection: { enabled: true },
+      success_url: `${origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/cancel.html`
     });
 
-    return res.status(200).json({ url: session.url });
+    return res.status(200).json({ ok: true, url: session.url });
   } catch (err) {
-    console.error("create-checkout-session error:", err);
-    return res.status(500).json({ error: err.message || "Server error" });
+    console.error("Stripe checkout error:", err);
+    return res.status(500).json({ ok: false, error: err?.message || "Checkout error" });
   }
-};
+}

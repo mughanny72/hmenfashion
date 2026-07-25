@@ -1,0 +1,100 @@
+/* HMF CARD LAYOUT RESTORE ONLY
+   This file changes only the product card look.
+   It does not touch cart, checkout, admin, product data, colors, or preview.
+*/
+
+#productGrid,
+.store-grid,
+.products-grid,
+.hmf-products-grid{
+  align-items: stretch !important;
+}
+
+.hmf-admin-card,
+.product-card{
+  height: auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+/* Same photo area for every card */
+.hmf-card-photo,
+.product-photo,
+.hmf-admin-card > div:first-child,
+.product-card > div:first-child{
+  height: 360px !important;
+  min-height: 360px !important;
+  max-height: 360px !important;
+  overflow: hidden !important;
+  border-radius: 18px !important;
+  background: #050609 !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+.hmf-card-photo img,
+.product-photo img,
+.hmf-admin-card img,
+.product-card img{
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  display: block !important;
+}
+
+/* Keep product name/description controlled */
+.hmf-admin-card h3,
+.product-card h3{
+  min-height: 28px !important;
+  line-height: 1.15 !important;
+  margin-top: 10px !important;
+  margin-bottom: 4px !important;
+}
+
+.hmf-admin-card .muted,
+.product-card .muted,
+.hmf-admin-card p,
+.product-card p{
+  max-height: 48px !important;
+  overflow: hidden !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+}
+
+/* Make options section consistent */
+.hmf-admin-card label,
+.product-card label{
+  display: inline-block !important;
+  min-width: auto !important;
+}
+
+.hmf-admin-card select,
+.product-card select{
+  max-width: 100% !important;
+}
+
+/* Keep buttons aligned cleaner */
+.hmf-admin-card button,
+.product-card button{
+  max-width: 100% !important;
+}
+
+/* Stop card content from stretching in strange ways */
+.hmf-admin-card *,
+.product-card *{
+  box-sizing: border-box !important;
+}
+
+@media(max-width: 900px){
+  .hmf-card-photo,
+  .product-photo,
+  .hmf-admin-card > div:first-child,
+  .product-card > div:first-child{
+    height: 300px !important;
+    min-height: 300px !important;
+    max-height: 300px !important;
+  }
+}
