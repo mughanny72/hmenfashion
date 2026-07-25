@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>My Combos — H Men's Fashion</title>
+<link rel="stylesheet" href="./style.css"/>
+<style>
+  body{background:#0b0c10;color:#fff;font-family:Inter,Arial,sans-serif;padding:24px;}
+  .wrap{max-width:700px;margin:0 auto;}
+  .card{background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.018));border:1px solid rgba(255,255,255,.13);border-radius:22px;padding:22px;margin-top:16px;}
+  h1{margin:0 0 6px;}
+  .muted{color:#a9adbb;}
+  .pill{display:inline-flex;padding:6px 12px;border-radius:999px;background:linear-gradient(135deg,#f0d27a,#d4af52);color:#111;font-weight:900;font-size:12px;text-transform:uppercase;margin-bottom:10px;}
+  .pill.ghost{background:transparent;border:1px solid rgba(212,175,82,.5);color:#f0d27a;}
+  input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:#090b11;color:#fff;font-size:15px;box-sizing:border-box;margin:10px 0;}
+  .btn{border:none;border-radius:12px;padding:12px 20px;font-weight:900;cursor:pointer;font-size:15px;}
+  .btn.primary{background:linear-gradient(135deg,#f0d27a,#d4af52);color:#111;}
+  .combo-row{border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:14px;margin-top:12px;background:rgba(255,255,255,.03);}
+  .combo-name{font-size:20px;font-weight:950;margin-bottom:4px;}
+  .combo-meta{color:#a9adbb;font-size:13px;line-height:1.6;}
+  .sold-bar-wrap{background:rgba(255,255,255,.08);border-radius:999px;height:10px;margin:10px 0 4px;}
+  .sold-bar{background:linear-gradient(90deg,#f0d27a,#d4af52);border-radius:999px;height:10px;transition:width .4s ease;}
+  .reward-box{margin-top:12px;border:1px solid rgba(72,209,122,.4);border-radius:14px;padding:12px;background:rgba(72,209,122,.06);}
+  .reward-code{font-size:22px;font-weight:950;color:#48d17a;letter-spacing:.1em;margin-top:4px;}
+  .back-link{display:inline-block;margin-bottom:20px;color:#d4af52;text-decoration:none;font-weight:700;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="./index.html" class="back-link">← Back to Store</a>
+  <div class="pill">My Combos</div>
+  <h1>Check Your Combo Rewards</h1>
+  <p class="muted">Enter the email you used when you named your combo to see how many sales it has — and claim your reward when it hits 10.</p>
+
+  <div class="card">
+    <label style="font-weight:700;">Your Email</label>
+    <input id="emailInput" type="email" placeholder="yourname@email.com" />
+    <button class="btn primary" id="lookupBtn" style="width:100%;margin-top:4px;">Look Up My Combos</button>
+    <div id="lookupMsg" class="muted" style="margin-top:10px;"></div>
+  </div>
+
+  <div id="results"></div>
+</div>
+
+<script>
+  const btn = document.getElementById("lookupBtn");
+  const msg = document.getElementById("lookupMsg");
+  const results = document.getElementById("results");
+
+  btn.addEventListener("click", async () => {
+    const email = (document.getElementById("emailInput").value || "").trim().toLowerCase();
+    if (!email || !email.includes("@")) {
+      msg.textContent = "Please enter a valid email address.";
+      return;
+    }
+    msg.textContent = "Looking up your combos...";
+    results.innerHTML = "";
+    try {
+      const r = await fetch("/api/combos");
+      const data = await r.json();
+      if (!data.ok) throw new Error(data.error || "Failed to load combos.");
+
+      const mine = (data.combos || []).filter(c => c.creatorEmail === email);
+      if (!mine.length) {
+        msg.textContent = "No combos found for that email. Make sure you use the same email you entered when creating the combo.";
+        return;
+      }
+      msg.textContent = `Found ${mine.length} combo${mine.length > 1 ? "s" : ""}.`;
+
+      results.innerHTML = mine.map(c => {
+        const pct = Math.min(100, Math.round((c.soldCount / 10) * 100));
+        const rewardHtml = c.rewardUnlocked && c.rewardCode
+          ? `<div class="reward-box">
+              <div style="font-weight:900;color:#48d17a;">🎉 Reward Unlocked!</div>
+              <div class="muted" style="font-size:13px;">Your 50% off code for your next order:</div>
+              <div class="reward-code">${c.rewardCode}</div>
+              <div class="muted" style="font-size:12px;margin-top:6px;">Enter this code at checkout. Single use, one order only.</div>
+            </div>`
+          : `<div class="muted" style="font-size:13px;margin-top:6px;">Reach 10 sales to unlock your 50% off code.</div>`;
+
+        return `
+          <div class="combo-row">
+            <div class="combo-name">${c.name}</div>
+            <div class="combo-meta">
+              ${c.bundleTitle} &nbsp;•&nbsp; $${c.price} &nbsp;•&nbsp; Created ${c.createdAtET}
+            </div>
+            <div class="combo-meta" style="margin-top:6px;">
+              ${c.selections.map(s => `<span>${s.label}: ${s.color}${s.size ? "/" + s.size : ""}</span>`).join(" &nbsp;+&nbsp; ")}
+            </div>
+            <div class="sold-bar-wrap" style="margin-top:12px;">
+              <div class="sold-bar" style="width:${pct}%"></div>
+            </div>
+            <div style="font-weight:900;font-size:18px;">${c.soldCount} / 10 sold</div>
+            ${rewardHtml}
+          </div>
+        `;
+      }).join("");
+    } catch (e) {
+      msg.textContent = "Error: " + (e.message || "Something went wrong.");
+    }
+  });
+</script>
+</body>
+</html>
