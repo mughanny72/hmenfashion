@@ -498,7 +498,7 @@ function renderStorageUsage(){
 // admin.html is opened as a local file (file://), so relative fetch("/api/...") calls
 // would incorrectly resolve to file:///api/... instead of your live website. When not
 // running over http/https, prefix every API call with your live site's real address.
-const HMF_API_BASE=(location.protocol==="http:"||location.protocol==="https:")?"":"https://hmenfashion.com";
+const HMF_API_BASE=(location.protocol==="http:"||location.protocol==="https:")?"":"https://www.hmenfashion.com";
 const ADMIN_KEY_STORAGE="HMF_ADMIN_API_KEY";
 function getAdminKey(){ try{return localStorage.getItem(ADMIN_KEY_STORAGE)||""}catch(_){return""} }
 function setAdminKey(k){ try{k?localStorage.setItem(ADMIN_KEY_STORAGE,k):localStorage.removeItem(ADMIN_KEY_STORAGE)}catch(_){} renderAdminKeyStatus(); }

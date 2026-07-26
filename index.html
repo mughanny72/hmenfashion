@@ -1,672 +1,120 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>H Men’s Fashion | Now Open</title>
-  <meta name="description" content="H Men’s Fashion is now open at Westmoreland Mall in Greensburg, PA. Shop suits, shirts, T-shirts, pants, shoes, accessories, and complete outfits online." />
-  <meta name="theme-color" content="#0b0c10" />
-  <link rel="stylesheet" href="./style.css" />
-<link rel="stylesheet" href="./hmf-card-layout-restore.css">
-  <style>
-    /* === HMF 3-IN-1 HOMEPAGE + STORE FIX === */
-    .splash.hmf-hide{opacity:0!important;visibility:hidden!important;pointer-events:none!important;transition:opacity .55s ease, visibility .55s ease!important;}
-    .splash .splash-messages{display:block!important;color:#f4e3a0!important;font-weight:800!important;line-height:1.55!important;}
-    .splash .splash-messages .open-pill{display:inline-flex;margin:10px 0 12px;padding:8px 14px;border-radius:999px;background:linear-gradient(135deg,#f0d27a,#d4af52);color:#111;font-weight:950;text-transform:uppercase;letter-spacing:.08em;}
-    .splash-preview-btn{display:none!important;}
-    .hmf-home{position:relative;overflow:auto;border:1px solid rgba(212,175,82,.22);border-radius:28px;margin:22px 0 26px;padding:28px;background:radial-gradient(circle at 18% 20%,rgba(212,175,82,.20),transparent 32%),linear-gradient(145deg,rgba(212,175,82,.08),rgba(0,0,0,.80));box-shadow:0 24px 80px rgba(0,0,0,.35)}
-    .hmf-hero{display:grid;grid-template-columns:1.05fr .95fr;gap:24px;align-items:center}.hmf-pill{display:inline-flex;align-items:center;border-radius:999px;padding:9px 14px;background:linear-gradient(135deg,#f0d27a,#d4af52);color:#111;font-weight:950;text-transform:uppercase;letter-spacing:.08em;font-size:13px}.hmf-hero h1{font-size:clamp(34px,5vw,68px);line-height:.96;margin:20px 0 14px;text-transform:uppercase;letter-spacing:.03em}.hmf-hero h1 span{color:#f0d27a}.hmf-lead{color:#d8c27a;font-size:clamp(16px,2vw,20px);line-height:1.58;margin:0 0 18px}.hmf-address{border:1px solid rgba(212,175,82,.30);border-radius:20px;padding:18px;background:rgba(0,0,0,.36);color:#f4e3a0;line-height:1.6;margin:18px 0}.hmf-address b{display:block;color:#fff;font-size:18px;margin-bottom:5px}.hmf-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.hmf-video-card{border:1px solid rgba(212,175,82,.25);border-radius:24px;background:#050609;overflow:auto;min-height:360px;display:grid;place-items:center}.hmf-video-card video{width:100%;height:100%;min-height:360px;object-fit:cover;display:block}.hmf-video-note{padding:24px;text-align:center;color:#d8c27a}.hmf-cat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:22px}.hmf-cat{border:1px solid rgba(212,175,82,.25);border-radius:18px;padding:14px;background:rgba(0,0,0,.34);min-height:92px;display:flex;flex-direction:column;justify-content:space-between}.hmf-cat b{color:#fff}.hmf-cat span{color:#d8c27a;font-size:12px}.hmf-video-section{margin-top:26px}.hmf-video-section h2,.hmf-featured-section h2{margin:0 0 8px;font-size:clamp(26px,3.5vw,42px)}.hmf-featured-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}.hmf-feature-card{border:1px solid rgba(212,175,82,.25);border-radius:22px;background:rgba(0,0,0,.36);overflow:auto}.hmf-feature-img{height:250px;background:#050609;display:flex;align-items:center;justify-content:center;overflow:auto}.hmf-feature-img img{max-width:100%;max-height:100%;object-fit:contain}.hmf-feature-body{padding:15px}.hmf-feature-body h3{margin:0 0 6px}.hmf-price{color:#f0d27a;font-weight:950;font-size:20px;margin-top:8px}.hmf-now-open-bar{margin-top:26px;border:1px solid rgba(212,175,82,.25);border-radius:22px;padding:18px;background:rgba(212,175,82,.08);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.hmf-store-title{padding-top:18px}.sidenav .hmf-home-link{border-color:rgba(212,175,82,.30)}
-    @media(max-width:980px){.hmf-hero{grid-template-columns:1fr}.hmf-cat-grid{grid-template-columns:repeat(3,1fr)}.hmf-featured-grid{grid-template-columns:1fr 1fr}}
-    @media(max-width:640px){.hmf-home{padding:18px;margin:12px 0 20px}.hmf-cat-grid{grid-template-columns:1fr 1fr}.hmf-featured-grid{grid-template-columns:1fr}.hmf-video-card,.hmf-video-card video{min-height:260px}.hmf-feature-img{height:220px}}
-  
-/* === FINAL FIX: remove old coming-soon splash flash === */
-#splash,
-.splash{
-  display:none !important;
-  opacity:0 !important;
-  visibility:hidden !important;
-  pointer-events:none !important;
-}
-#layout,
-.layout{
-  opacity:1 !important;
-  visibility:visible !important;
-}
-
-
-/* === FINAL SCROLL FIX: allow full page scrolling === */
-html,
-body{
-  height:auto !important;
-  min-height:100% !important;
-  overflow-x:hidden !important;
-  overflow-y:auto !important;
-}
-
-body{
-  position:static !important;
-}
-
-#layout,
-.layout{
-  height:auto !important;
-  min-height:100vh !important;
-  overflow:visible !important;
-}
-
-#main,
-.main{
-  height:auto !important;
-  min-height:100vh !important;
-  overflow:visible !important;
-}
-
-.sidebar{
-  height:100vh !important;
-  max-height:100vh !important;
-  overflow-y:auto !important;
-}
-
-.mainbar{
-  position:sticky !important;
-  top:0 !important;
-  z-index:40 !important;
-}
-
-section,
-.section{
-  scroll-margin-top:110px !important;
-}
-
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>H Men's Fashion — Coming Soon</title>
+<meta name="description" content="H Men's Fashion is putting the finishing touches on our online store. Check back soon."/>
+<meta name="theme-color" content="#0b0c10"/>
+<style>
+  :root{ --gold:#d4af52; --gold2:#f0d27a; --bg:#0b0c10; --text:#fff; --muted:#c9c3b0; }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:Georgia,'Times New Roman',serif;
+    background:radial-gradient(circle at 50% 30%, rgba(212,175,82,.14), transparent 55%), var(--bg);
+    color:var(--text);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+    padding:24px;
+    text-align:center;
+  }
+  .wrap{ max-width:640px; }
+  .logo{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:16px;
+    margin-bottom:28px;
+  }
+  .logo svg{ width:64px; height:64px; flex-shrink:0; }
+  .logo-text{
+    font-size:34px;
+    letter-spacing:.14em;
+    font-weight:400;
+    background:linear-gradient(135deg, var(--gold2), var(--gold));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    white-space:nowrap;
+  }
+  .rule{
+    width:120px;
+    height:1px;
+    background:linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin:0 auto 34px;
+  }
+  h1{
+    font-size:clamp(28px, 5vw, 42px);
+    font-weight:400;
+    margin:0 0 18px;
+    letter-spacing:.02em;
+    line-height:1.25;
+  }
+  p{
+    color:var(--muted);
+    font-size:17px;
+    line-height:1.7;
+    margin:0 0 8px;
+    font-family:Arial,Helvetica,sans-serif;
+  }
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    margin-top:28px;
+    padding:10px 20px;
+    border:1px solid rgba(212,175,82,.4);
+    border-radius:999px;
+    background:rgba(212,175,82,.08);
+    color:var(--gold2);
+    font-family:Arial,Helvetica,sans-serif;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+  .pill:before{
+    content:"";
+    width:7px;height:7px;border-radius:50%;
+    background:var(--gold2);
+    box-shadow:0 0 8px var(--gold2);
+  }
+  .addr{
+    margin-top:38px;
+    font-family:Arial,Helvetica,sans-serif;
+    font-size:13px;
+    color:rgba(201,195,176,.65);
+    line-height:1.6;
+  }
 </style>
-
 </head>
-
 <body>
-
-  <!-- HMF QUICK LOGO SPLASH -->
-  <div id="splash" class="splash" aria-label="H Men's Fashion">
-    <div class="splash-bg" aria-hidden="true"></div>
-    <div class="splash-particles" aria-hidden="true">
-      <span></span><span></span><span></span><span></span><span></span><span></span>
-      <span></span><span></span><span></span><span></span><span></span><span></span>
+  <div class="wrap">
+    <div class="logo">
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="hgrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f0d27a"/>
+            <stop offset="100%" stop-color="#c9982f"/>
+          </linearGradient>
+        </defs>
+        <text x="32" y="46" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="52" font-weight="700" fill="url(#hgrad)">H</text>
+      </svg>
+      <div class="logo-text">MEN&rsquo;S&nbsp;FASHION</div>
     </div>
-
-    <div class="splash-card">
-      <img src="./images/logo-hmf-gold.png" alt="H Men's Fashion" class="splash-logo" />
-      <div class="splash-brand">H MEN&rsquo;S FASHION</div>
-      <div class="splash-tag">Affordable Luxury &middot; Smart Style</div>
-      <div class="splash-divider" aria-hidden="true"></div>
-
-      <div id="splashMessages" class="splash-messages"><div class="open-pill">Now Open</div><div>Westmoreland Mall · Greensburg, PA</div><div>5256 US-30, Suite NL-04</div></div>
-
-      <div class="splash-foot muted">&copy; <span id="splashYear"></span> hmenfashion.com</div>
-    </div>
-
-    <button class="splash-admin-btn" id="splashAdminBtn" type="button">Admin</button>
-    <button class="splash-preview-btn" id="splashPreviewBtn" type="button">Preview Site</button>
-  </div>
-
-  <div class="layout" id="layout">
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar" aria-label="Primary">
-      <div class="side-top">
-<div class="brandbox">
-  <img src="./images/logo-hmf-gold.png" alt="H Men's Fashion Logo" class="logo" />
-
-  <div class="brandtext">
-    <div class="brand-name">H Men’s Fashion</div>
-    <div class="brand-tag">Affordable Luxury • Smart Value</div>
-  </div>
-</div>
-
-        <button class="iconbtn side-collapse" id="btnCollapse" type="button" aria-label="Collapse sidebar" title="Collapse">
-          <!-- chevron-left -->
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-      </div>
-
-      <nav class="sidenav">
-        <a class="navlink hmf-home-link active" href="#home">
-          <span class="navicon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V11z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
-          </span>
-          <span class="navtext">Home</span>
-        </a>
-
-        <a class="navlink" href="#outfits">
-          <span class="navicon" aria-hidden="true">
-            <!-- sparkles -->
-            <svg viewBox="0 0 24 24"><path d="M12 2l1.2 4.3L17.5 8l-4.3 1.2L12 13.5l-1.2-4.3L6.5 8l4.3-1.7L12 2zM19 11l.8 2.9L23 15l-3.2.9L19 19l-.8-3.1L15 15l3.2-1.1L19 11zM4.5 13l.7 2.4L7.8 16l-2.6.6L4.5 19l-.7-2.4L1.2 16l2.6-.6L4.5 13z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-          </span>
-          <span class="navtext">Outfits</span>
-        </a>
-
-        <a class="navlink" href="#suits">
-          <span class="navicon" aria-hidden="true">
-            <!-- briefcase -->
-            <svg viewBox="0 0 24 24"><path d="M9 6V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3 8h18v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 13h18" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-          </span>
-          <span class="navtext">Suits</span>
-        </a>
-
-        <a class="navlink" href="#casual">
-          <span class="navicon" aria-hidden="true">
-            <!-- shirt -->
-            <svg viewBox="0 0 24 24"><path d="M8 4l4 3 4-3 4 3-2 4v13H6V11L4 7l4-3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
-          </span>
-          <span class="navtext">Smart Casual</span>
-        </a>
-
-        <a class="navlink" href="#shoes">
-          <span class="navicon" aria-hidden="true">
-            <!-- shoe (simple) -->
-            <svg viewBox="0 0 24 24"><path d="M3 15c4 0 6-4 7-6 1 2 3 4 6 4 2 0 3-1 5-1v5c0 2-2 3-4 3H5c-1 0-2-1-2-2v-3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
-          </span>
-          <span class="navtext">Shoes</span>
-        </a>
-
-        <a class="navlink" href="#accessories">
-          <span class="navicon" aria-hidden="true">
-            <!-- tag -->
-            <svg viewBox="0 0 24 24"><path d="M20 13l-7 7-10-10V3h7l10 10z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7 7h.01" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
-          </span>
-          <span class="navtext">Accessories</span>
-        </a>
-
-        <a class="navlink" href="#bundlesSection">
-          <span class="navicon" aria-hidden="true">
-            <!-- gift/bundle -->
-            <svg viewBox="0 0 24 24"><path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
-          </span>
-          <span class="navtext">Bundles</span>
-        </a>
-
-        <div class="navsep"></div>
-
-        <a class="navlink" href="#cart">
-          <span class="navicon" aria-hidden="true">
-            <!-- cart -->
-            <svg viewBox="0 0 24 24"><path d="M6 6h15l-2 8H8L6 6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M6 6L5 3H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9 20h.01M18 20h.01" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
-          </span>
-          <span class="navtext">Cart</span>
-          <span class="badge" id="cartCountBadge">0</span>
-        </a>
-
-        <a class="navlink" href="#membership">
-          <span class="navicon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-          </span>
-          <span class="navtext">Membership</span>
-        </a>
-
-        <a class="navlink" href="#footer">
-          <span class="navicon" aria-hidden="true">
-            <!-- info -->
-            <svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 10v7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 7h.01" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
-          </span>
-          <span class="navtext">About / Contact</span>
-        </a>
-      </nav>
-
-      <div class="side-bottom">
-        <button class="btn ghost full" id="btnOpenMobileMenu" type="button">Menu</button>
-        <div class="muted tiny">Demo store • Cart saves automatically</div>
-      </div>
-    </aside>
-
-    <!-- Main -->
-    <main class="main" id="main">
-      <header class="mainbar">
-        <button class="iconbtn" id="btnHamburger" type="button" aria-label="Open menu" title="Menu">
-          <!-- hamburger -->
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        </button>
-
-<div class="searchwrap">
-  <input id="searchInput" class="search" placeholder="Search outfits (e.g., suit, loafers, shirt)..." />
-
-  <button id="btnSearchFocus" class="kbd icon-kbd" type="button" aria-label="Focus search">
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="11" cy="11" r="7"></circle>
-      <line x1="16.65" y1="16.65" x2="21" y2="21"></line>
-    </svg>
-  </button>
-</div>
-
-<div class="mainbar-actions">
-  <select id="categorySelect" class="select" aria-label="Category filter">
-    <option value="ALL">All</option>
-    <option value="SUITS">Suits</option>
-    <option value="CASUAL">Smart Casual</option>
-    <option value="SHOES">Shoes</option>
-    <option value="ACCESSORIES">Accessories</option>
-  </select>
-
-  <!-- ✅ NEW: Lookbook -->
-  <button class="btn ghost" id="btnGoLookbook" type="button" title="Lookbook (L)">
-    Lookbook
-  </button>
-
-  <!-- Existing -->
-  <button class="btn primary" id="btnScrollCart" type="button">View Cart</button>
-</div>
-      </header>
-
-
-      <!-- HMF NOW OPEN HOMEPAGE + VIDEO + FEATURED PRODUCTS -->
-      <section class="section hmf-home" id="home">
-        <div class="hmf-hero">
-          <div>
-            <div class="hmf-pill">Now Open</div>
-            <h1>Luxury Look.<br><span>Smart Value.</span></h1>
-            <p class="hmf-lead">H Men’s Fashion is now open at Westmoreland Mall. Shop in-store or online for suits, shirts, T-shirts, pants, shoes, accessories, and complete outfits.</p>
-            <div class="hmf-address">
-              <b>H Men’s Fashion — Westmoreland Mall</b>
-              5256 US-30, Suite NL-04<br>
-              Greensburg, PA 15601
-            </div>
-            <div class="hmf-actions">
-              <a class="btn primary" href="#outfits">Shop Now</a>
-              <a class="btn ghost" href="#storeVideo">Watch Store Video</a>
-              <a class="btn ghost" href="https://www.google.com/maps/search/?api=1&query=5256+US-30,+Suite+NL-04,+Greensburg,+PA+15601" target="_blank" rel="noopener">Get Directions</a>
-            </div>
-          </div>
-          <div class="hmf-video-card">
-            <video autoplay muted loop playsinline controls poster="./images/store-video-poster.jpg">
-              <source src="./videos/store-video.mp4" type="video/mp4">
-            </video>
-          </div>
-        </div>
-
-        <div class="hmf-cat-grid" aria-label="Shop categories">
-          <a class="hmf-cat" href="#outfits"><b>Outfits</b><span>Complete looks ready to wear</span></a>
-          <a class="hmf-cat" href="#outfits"><b>Suits</b><span>Business, wedding, and events</span></a>
-          <a class="hmf-cat" href="#outfits"><b>Shirts</b><span>Dress and casual shirts</span></a>
-          <a class="hmf-cat" href="#outfits"><b>T-Shirts</b><span>Everyday smart casual</span></a>
-          <a class="hmf-cat" href="#outfits"><b>Pants</b><span>Dress pants, jeans, and casual</span></a>
-          <a class="hmf-cat" href="#outfits"><b>Shoes</b><span>Loafers, dress shoes, and casual</span></a>
-        </div>
-
-        <div class="hmf-video-section" id="storeVideo">
-          <h2>Inside H Men’s Fashion</h2>
-          <p class="muted">See the store, featured styles, and outfit ideas before you visit or shop online.</p>
-        </div>
-
-        <div class="hmf-featured-section" id="featured">
-          <div class="hmf-now-open-bar">
-            <div>
-              <h2>Featured Items & Outfits</h2>
-              <p class="muted">Selected from your current admin products.</p>
-            </div>
-            <a class="btn primary" href="#outfits">View Full Store</a>
-          </div>
-          <div class="hmf-featured-grid" id="hmfFeaturedGrid"></div>
-        </div>
-      </section>
-
-
-<!-- ✅ LOOKBOOK (UPGRADED: full-screen + dots + arrows + autoplay-ready + accessibility) -->
-<section id="lookbook" class="lookbook" aria-label="Lookbook" tabindex="-1">
-
-  <!-- Top bar -->
-  <div class="look-top">
-    <div>
-      <div class="look-kicker">Lookbook Mode</div>
-      <h2 class="look-title">Curated outfits — cinematic view</h2>
-      <div class="look-sub">Use ◀ ▶ arrows, dots, or keyboard (← →). Press Esc to exit fullscreen (optional).</div>
-    </div>
-
-    <div class="look-actions">
-      <button class="btn ghost" id="lookPrev" type="button" aria-label="Previous look">◀</button>
-      <button class="btn ghost" id="lookNext" type="button" aria-label="Next look">▶</button>
-      <button class="btn ghost" id="lookAuto" type="button" aria-pressed="false" title="Auto slideshow">Auto</button>
+    <div class="rule"></div>
+    <h1>Something New Is Almost Ready</h1>
+    <p>We're putting the finishing touches on our online store — checkout, shipping, and everything in between.</p>
+    <p>Thank you for your patience. We'll be back online shortly.</p>
+    <div class="pill">Launching Soon</div>
+    <div class="addr">
+      H Men's Fashion — Westmoreland Mall<br/>
+      5256 US-30, Suite NL-04, Greensburg, PA 15601
     </div>
   </div>
-
-  <!-- Slides viewport -->
-  <div class="look-viewport" id="lookViewport">
-
-    <article class="look-slide is-active" data-look="business" data-index="0" role="group" aria-roledescription="slide" aria-label="Business Authority">
-      <div class="look-bg" aria-hidden="true"></div>
-      <!-- ▼ TO ADD A VIDEO: drop file in /videos and uncomment the line below ▼ -->
-      <!-- <video class="look-video" src="./videos/business.mp4" autoplay loop muted playsinline></video> -->
-
-      <div class="look-overlay">
-        <span class="look-pill">Signature Look</span>
-        <h3>Business Authority</h3>
-        <p>Sharp navy suit. Clean lines. Executive presence.</p>
-
-        <div class="look-cta">
-          <button class="btn primary look-add" data-bundle="business" type="button">
-            Shop This Look
-          </button>
-          <button class="btn ghost look-view" data-jump="SUIT_NAVY" type="button">
-            View Key Piece
-          </button>
-        </div>
-      </div>
-    </article>
-
-    <article class="look-slide" data-look="wedding" data-index="1" role="group" aria-roledescription="slide" aria-label="Wedding Elegance">
-      <div class="look-bg" aria-hidden="true"></div>
-      <!-- <video class="look-video" src="./videos/wedding.mp4" autoplay loop muted playsinline></video> -->
-
-      <div class="look-overlay">
-        <span class="look-pill">Signature Look</span>
-        <h3>Wedding Elegance</h3>
-        <p>Timeless formal style. Elevated confidence.</p>
-
-        <div class="look-cta">
-          <button class="btn primary look-add" data-bundle="wedding" type="button">
-            Shop This Look
-          </button>
-          <button class="btn ghost look-view" data-jump="TIE_SET" type="button">
-            View Key Piece
-          </button>
-        </div>
-      </div>
-    </article>
-
-    <article class="look-slide" data-look="casual" data-index="2" role="group" aria-roledescription="slide" aria-label="Smart Casual Weekend">
-      <div class="look-bg" aria-hidden="true"></div>
-      <!-- <video class="look-video" src="./videos/casual.mp4" autoplay loop muted playsinline></video> -->
-
-      <div class="look-overlay">
-        <span class="look-pill">Signature Look</span>
-        <h3>Smart Casual Weekend</h3>
-        <p>Relaxed structure. Effortless refinement.</p>
-
-        <div class="look-cta">
-          <button class="btn primary look-add" data-bundle="casual" type="button">
-            Shop This Look
-          </button>
-          <button class="btn ghost look-view" data-jump="BLAZER_CHAR" type="button">
-            View Key Piece
-          </button>
-        </div>
-      </div>
-    </article>
-
-    <article class="look-slide" data-look="evening" data-index="3" role="group" aria-roledescription="slide" aria-label="Evening Confidence">
-      <div class="look-bg" aria-hidden="true"></div>
-      <!-- <video class="look-video" src="./videos/evening.mp4" autoplay loop muted playsinline></video> -->
-
-      <div class="look-overlay">
-        <span class="look-pill">Signature Look</span>
-        <h3>Evening Confidence</h3>
-        <p>Dark tones. Bold presence. Modern edge.</p>
-
-        <div class="look-cta">
-          <button class="btn primary look-add" data-bundle="evening" type="button">
-            Shop This Look
-          </button>
-          <button class="btn ghost look-view" data-jump="BELT_BLACK" type="button">
-            View Key Piece
-          </button>
-        </div>
-      </div>
-    </article>
-
-  </div>
-
-  <!-- Progress dots -->
-  <div class="look-dots" role="tablist" aria-label="Lookbook navigation">
-    <button class="look-dot is-on" type="button" data-to="0" role="tab" aria-selected="true" aria-label="Go to Business Authority"></button>
-    <button class="look-dot" type="button" data-to="1" role="tab" aria-selected="false" aria-label="Go to Wedding Elegance"></button>
-    <button class="look-dot" type="button" data-to="2" role="tab" aria-selected="false" aria-label="Go to Smart Casual Weekend"></button>
-    <button class="look-dot" type="button" data-to="3" role="tab" aria-selected="false" aria-label="Go to Evening Confidence"></button>
-  </div>
-
-</section>
-
-      <!-- Bundles: combos of existing products sold at a set price, managed in Admin -->
-      <section class="section" id="bundlesSection">
-        <div class="section-head">
-          <div>
-            <h2>Shop Bundles &amp; Save</h2>
-            <p class="muted">Complete looks made from real store items, priced as a set.</p>
-          </div>
-        </div>
-        <div class="hmf-featured-grid" id="hmfBundlesGrid"></div>
-      </section>
-
-      <!-- Outfits -->
-      <section class="section" id="outfits">
-        <div class="section-head">
-          <div>
-            <h1 class="hmf-store-title">Full Store</h1>
-            <p class="muted">Choose complete outfits or individual pieces. Select size, color, and fit, then add to cart.</p>
-          </div>
-          <div class="chips" id="chips"></div>
-        </div>
-
-        <div class="grid products" id="productGrid" aria-live="polite"></div>
-      </section>
-
-      <!-- Category anchors (for sidebar links) -->
-      <div id="suits"></div>
-      <div id="casual"></div>
-      <div id="shoes"></div>
-      <div id="accessories"></div>
-<section id="membership" style="max-width:900px;margin:40px auto;padding:20px;border:1px solid #333;border-radius:16px;">
-  <h2 style="margin:0 0 10px 0;">Premium Membership</h2>
-  <p style="margin:0 0 16px 0;opacity:.85;">
-    Get monthly access to exclusive outfits, early releases, and member benefits.
-  </p>
-
-  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
-    <input
-      id="memberEmail"
-      type="email"
-      placeholder="Email (optional)"
-      style="flex:1;min-width:240px;padding:12px 14px;border-radius:10px;border:1px solid #444;background:#111;color:#fff;"
-    />
-    <button
-      id="subscribeBtn"
-      style="padding:12px 18px;border-radius:10px;border:0;background:#caa24a;color:#111;font-weight:800;cursor:pointer;"
-    >
-      Subscribe — $19/mo
-    </button>
-  </div>
-
-  <div id="subscribeMsg" style="margin-top:12px;opacity:.85;"></div>
-</section>
-      <!-- Cart -->
-      <section class="section alt" id="cart">
-        <div class="section-head">
-          <div>
-            <h2>Your Cart</h2>
-            <p class="muted">Adjust quantities, then checkout (next step: Stripe).</p>
-          </div>
-          <div class="cart-actions">
-            <button class="btn ghost" id="btnClearCart" type="button">Clear</button>
-            <button class="btn primary" id="btnCheckout" type="button">
-  Checkout Securely
-</button>
-          </div>
-        </div>
-
-        <div class="cartbox">
-          <div id="cartItems"></div>
-
-          <div class="cartfooter">
-            <div class="total">
-              <span class="muted">Total</span>
-              <strong id="cartTotal">$0.00</strong>
-            </div>
-            <div class="hint" id="cartHint"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Footer -->
-      <footer class="footer" id="footer">
-        <div class="footergrid">
-          <div class="footercard">
-            <div class="brand-name">H Men’s Fashion</div>
-            <div class="muted">Affordable Luxury • Smart Value</div>
-            <div class="muted tiny" style="margin-top:10px;">© <span id="year"></span> hmenfashion.com</div>
-          </div>
-
-          <div class="footercard" id="footer-about">
-            <div class="footertitle">About</div>
-            <p class="muted">
-              We focus on men’s essentials that look premium without the premium price.
-              Clean fit, easy matching, and confidence-first styling.
-            </p>
-            <div class="muted tiny">Future upgrade: outfit recommender + size guidance.</div>
-          </div>
-
-          <div class="footercard" id="footer-contact">
-            <div class="footertitle">Contact</div>
-            <form class="footerform" id="contactForm">
-              <input required name="name" placeholder="Name" />
-              <input required name="contact" placeholder="Phone / Email" />
-              <textarea name="msg" rows="3" placeholder="Message (size, budget, event...)"></textarea>
-              <button class="btn primary full" type="submit">Send</button>
-              <div class="hint" id="formHint"></div>
-            </form>
-          </div>
-
-          <div class="footercard">
-            <div class="footertitle">Policies</div>
-            <div class="footerlinks">
-              <button class="linkbtn" data-policy="shipping" type="button">Shipping</button>
-              <button class="linkbtn" data-policy="returns" type="button">Returns</button>
-              <button class="linkbtn" data-policy="privacy" type="button">Privacy</button>
-              <button class="linkbtn" data-policy="terms" type="button">Terms</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="footerbottom muted">Built for confidence. Priced for smart value.</div>
-      </footer>
-    </main>
-  </div>
-
-  <!-- Mobile overlay -->
-  <div class="overlay" id="overlay" hidden></div>
-
-  <!-- Product Quick View Modal -->
-  <div class="modal" id="productModal" role="dialog" aria-modal="true" aria-labelledby="pmTitle" hidden>
-    <div class="modalcard">
-      <button class="iconbtn modalclose" id="btnCloseModal" type="button" aria-label="Close">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      </button>
-
-      <div class="modalgrid">
-        <div class="modalimg" id="pmImg" aria-hidden="true"></div>
-
-        <div class="modalcontent">
-          <div class="pillrow">
-            <span class="pill" id="pmCat">OUTFIT</span>
-            <span class="pill" id="pmTag">SMART VALUE</span>
-          </div>
-
-          <h3 id="pmTitle" style="margin:10px 0 6px;"></h3>
-          <div class="price big" id="pmPrice"></div>
-          <p class="muted" id="pmDesc" style="margin-top:10px;"></p>
-
-          <div class="formrow">
-            <label class="lbl">
-              Size
-              <select class="select" id="pmSize">
-                <option value="S">S</option>
-                <option value="M" selected>M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
-              </select>
-            </label>
-
-            <label class="lbl">
-              Qty
-              <div class="qty">
-                <button class="iconbtn" id="pmMinus" type="button" aria-label="Decrease quantity">−</button>
-                <input id="pmQty" value="1" inputmode="numeric" />
-                <button class="iconbtn" id="pmPlus" type="button" aria-label="Increase quantity">+</button>
-              </div>
-            </label>
-          </div>
-
-          <div class="modalactions">
-            <button class="btn primary" id="pmAdd" type="button">Add to Cart</button>
-            <button class="btn ghost" id="pmGoCart" type="button">Go to Cart</button>
-          </div>
-
-          <div class="hint" id="pmHint"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Policy Modal -->
-  <div class="modal" id="policyModal" role="dialog" aria-modal="true" aria-labelledby="polTitle" hidden>
-    <div class="modalcard">
-      <button class="iconbtn modalclose" id="btnClosePolicy" type="button" aria-label="Close">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      </button>
-      <h3 id="polTitle" style="margin:0 0 8px;"></h3>
-      <div class="muted" id="polBody"></div>
-    </div>
-  </div>
-
-
-<script>
-(function(){
-  function money(n){return "$"+Number(n||0).toFixed(2)}
-  function esc(v){return String(v??"").replace(/[&<>\'\"]/g,function(ch){return {"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'\"':"&quot;"}[ch]})}
-  function firstImage(p){
-    if(p && Array.isArray(p.variants) && p.variants.length && p.variants[0].image) return p.variants[0].image;
-    return (p && p.image) || "./images/logo-hmf-gold.png";
-  }
-  function renderFeatured(){
-    var grid=document.getElementById("hmfFeaturedGrid");
-    if(!grid) return;
-    var products=[];
-    try{products=JSON.parse(localStorage.getItem("HMF_ADMIN_PRODUCTS")||"[]")}catch(e){products=[]}
-    if(!products.length){
-      grid.innerHTML='<div class="hmf-feature-card"><div class="hmf-feature-img"><img src="./images/logo-hmf-gold.png" alt="H Men\'s Fashion"></div><div class="hmf-feature-body"><h3>Featured Looks</h3><p class="muted">Add products in admin and they will appear here automatically.</p><div class="hmf-price">Shop Now</div></div></div>';
-      return;
-    }
-    grid.innerHTML=products.slice(0,6).map(function(p){
-      return '<a class="hmf-feature-card" href="#outfits"><div class="hmf-feature-img"><img src="'+esc(firstImage(p))+'" alt="'+esc(p.name||"H Men\'s Fashion product")+'"></div><div class="hmf-feature-body"><h3>'+esc(p.name||"H Men\'s Fashion")+'</h3><p class="muted">'+esc(p.description||"Affordable luxury and smart style.")+'</p><div class="hmf-price">'+money(p.price)+'</div></div></a>';
-    }).join("");
-  }
-  function hideSplash(){
-    var s=document.getElementById("splash");
-    if(s) s.classList.add("hmf-hide");
-  }
-  window.addEventListener("DOMContentLoaded", function(){
-    renderFeatured();
-    setTimeout(hideSplash, 2200);
-    var admin=document.getElementById("splashAdminBtn");
-    if(admin) admin.onclick=function(){ location.href="./admin.html"; };
-  });
-  window.addEventListener("load", function(){ setTimeout(hideSplash, 2600); renderFeatured(); });
-})();
-</script>
-
-  <script src="./app.js"></script>
-
-<script src="./hmf-products-addon.js"></script>
-<script src="./hmf-stripe-checkout.js"></script>
-<script src="./hmf-preview-click-only.js"></script>
-<script src="./outfit-bundles.js"></script>
-
-
-<script>
-(function(){
-  function finalFix(){
-    var s=document.getElementById('splash');
-    if(s) s.classList.add('hmf-hide');
-    var btn=document.getElementById('btnCheckout');
-    if(btn){btn.disabled=false; if(!btn.textContent.trim()) btn.textContent='Checkout Securely';}
-  }
-  setTimeout(finalFix,3000);
-  setTimeout(finalFix,5000);
-})();
-</script>
-
 </body>
 </html>
