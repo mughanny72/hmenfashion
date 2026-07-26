@@ -27,20 +27,9 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    gap:16px;
-    margin-bottom:28px;
+    margin-bottom:24px;
   }
-  .logo svg{ width:64px; height:64px; flex-shrink:0; }
-  .logo-text{
-    font-size:34px;
-    letter-spacing:.14em;
-    font-weight:400;
-    background:linear-gradient(135deg, var(--gold2), var(--gold));
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
-    white-space:nowrap;
-  }
+  .logo img{ width:220px; max-width:70vw; height:auto; display:block; }
   .rule{
     width:120px;
     height:1px;
@@ -95,16 +84,7 @@
 <body>
   <div class="wrap">
     <div class="logo">
-      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <defs>
-          <linearGradient id="hgrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#f0d27a"/>
-            <stop offset="100%" stop-color="#c9982f"/>
-          </linearGradient>
-        </defs>
-        <text x="32" y="46" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="52" font-weight="700" fill="url(#hgrad)">H</text>
-      </svg>
-      <div class="logo-text">MEN&rsquo;S&nbsp;FASHION</div>
+      <img src="./images/logo-hmf-gold.png" alt="H Men's Fashion" />
     </div>
     <div class="rule"></div>
     <h1>Something New Is Almost Ready</h1>
