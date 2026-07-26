@@ -25,9 +25,18 @@ export default async function handler(req, res) {
     const origin = process.env.SITE_URL || req.headers.origin || `https://${req.headers.host}`;
     const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
     const cart = Array.isArray(body?.cart) ? body.cart : [];
+    const shippingRate = body?.shippingRate || null;
 
     if (!cart.length) return res.status(400).json({ ok: false, error: "Cart is empty" });
     if (cart.length > 100) return res.status(400).json({ ok: false, error: "Too many items" });
+
+    // A live USPS/UPS rate must have been fetched and selected client-side
+    // (see hmf-shipping.js) before we'll create a checkout session. This
+    // guarantees the customer is charged the exact quoted carrier rate.
+    const shippingCents = cents(shippingRate?.amount);
+    if (!shippingRate || !shippingCents) {
+      return res.status(400).json({ ok: false, error: "Please select a shipping option before checkout." });
+    }
 
     const line_items = cart.map((item) => {
       const unit_amount = cents(item.price);
@@ -61,12 +70,32 @@ export default async function handler(req, res) {
       };
     });
 
+    const shippingLabel = clean(
+      `${shippingRate.carrier || ""} ${shippingRate.service || "Shipping"}`.trim(),
+      100
+    ) || "Shipping";
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
       line_items,
       billing_address_collection: "auto",
       shipping_address_collection: { allowed_countries: ["US"] },
+      shipping_options: [
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: { amount: shippingCents, currency: "usd" },
+            display_name: shippingLabel,
+            delivery_estimate: shippingRate.days
+              ? {
+                  minimum: { unit: "business_day", value: Math.max(1, Math.round(shippingRate.days)) },
+                  maximum: { unit: "business_day", value: Math.max(1, Math.round(shippingRate.days)) + 1 }
+                }
+              : undefined
+          }
+        }
+      ],
       phone_number_collection: { enabled: true },
       success_url: `${origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/cancel.html`

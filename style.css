@@ -505,6 +505,46 @@ textarea{ resize:vertical; }
 
 .cart-actions{ display:flex; gap:10px; }
 
+/* Live shipping widget */
+.hmf-shipping-box{
+  border:1px solid var(--border);
+  background: rgba(255,255,255,.02);
+  border-radius:18px;
+  padding:16px;
+  display:grid;
+  gap:10px;
+}
+.hmf-ship-title{ margin:0; font-size:15px; font-weight:900; }
+.hmf-ship-grid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap:8px;
+}
+.hmf-ship-grid input{
+  border:1px solid var(--border);
+  background: rgba(0,0,0,.20);
+  color: inherit;
+  border-radius:12px;
+  padding:10px 12px;
+  font-size:13px;
+}
+.hmf-ship-rates{ display:grid; gap:8px; }
+.hmf-ship-rate{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  border:1px solid var(--border);
+  background: rgba(0,0,0,.15);
+  border-radius:14px;
+  padding:10px 12px;
+  cursor:pointer;
+  font-size:13px;
+}
+.hmf-ship-rate strong{ margin-left:auto; }
+@media (max-width: 560px){
+  .hmf-ship-grid{ grid-template-columns: 1fr; }
+}
+
 /* Footer */
 .footer{
   margin-top:18px;

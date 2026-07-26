@@ -201,6 +201,32 @@ const PRODUCTS = [
   }
 ];
 
+/* =========================
+   SHIPPING WEIGHT DEFAULTS
+   Used to estimate package weight for live USPS/UPS rate quotes.
+   Add an optional `weightOz` field to any product in PRODUCTS above to
+   override the category default for that specific item.
+========================= */
+const HMF_CATEGORY_WEIGHT_OZ = {
+  SUITS: 64,        // ~4 lb (jacket + pants)
+  CASUAL: 16,        // ~1 lb (shirt / blazer / pants)
+  SHOES: 32,        // ~2 lb (pair + box)
+  ACCESSORIES: 8    // ~0.5 lb (belt / tie / etc.)
+};
+const HMF_DEFAULT_WEIGHT_OZ = 16;
+
+function hmfGetItemWeightOz(item) {
+  if (item && Number(item.weightOz) > 0) return Number(item.weightOz);
+  const cat = item && item.category;
+  return HMF_CATEGORY_WEIGHT_OZ[cat] || HMF_DEFAULT_WEIGHT_OZ;
+}
+
+// Expose for other scripts (shipping widget, checkout) without ES module imports
+if (typeof window !== "undefined") {
+  window.HMF_CATEGORY_WEIGHT_OZ = HMF_CATEGORY_WEIGHT_OZ;
+  window.hmfGetItemWeightOz = hmfGetItemWeightOz;
+}
+
 /* Override defaults with saved products from the in-browser Admin Panel */
 const PRODUCTS_LS_KEY = "HMEN_PRODUCTS_V1";
 (function loadSavedProducts(){

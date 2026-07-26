@@ -1,7 +1,25 @@
 /* H MEN'S FASHION — STRIPE CHECKOUT SAFE FIX */
 (function () {
   const CART_KEY = "hmfCart";
+  const SHIP_RATE_KEY = "hmfShippingRate";
+  const SHIP_ADDR_KEY = "hmfShipAddress";
   let checkoutRunning = false;
+
+  function getShippingRate() {
+    try {
+      return JSON.parse(localStorage.getItem(SHIP_RATE_KEY) || "null");
+    } catch {
+      return null;
+    }
+  }
+
+  function getShippingAddress() {
+    try {
+      return JSON.parse(localStorage.getItem(SHIP_ADDR_KEY) || "null");
+    } catch {
+      return null;
+    }
+  }
 
   function getCart() {
     try {
@@ -71,6 +89,14 @@
       return;
     }
 
+    const shippingRate = getShippingRate();
+    const shippingAddress = getShippingAddress();
+    if (!shippingRate || !shippingAddress) {
+      setHint("Please enter your address and choose a shipping option above before checking out.");
+      prepareButton();
+      return;
+    }
+
     try {
       checkoutRunning = true;
 
@@ -83,7 +109,7 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
-        body: JSON.stringify({ cart })
+        body: JSON.stringify({ cart, shippingRate, shippingAddress })
       });
 
       let data = {};
