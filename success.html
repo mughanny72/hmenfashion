@@ -63,8 +63,12 @@
             }
           } catch(_) {}
 
-          // Clear cart after successful purchase
+          // Clear cart after successful purchase (two cart systems exist in this
+          // codebase — clear both so nothing lingers regardless of which page you're on)
           localStorage.setItem("HMEN_CART_V1", "[]");
+          localStorage.setItem("hmfCart", "[]");
+          localStorage.removeItem("hmfShippingRate");
+          localStorage.removeItem("hmfShipAddress");
         }
       }catch(e){
         document.getElementById("headline").textContent = "Server error.";
