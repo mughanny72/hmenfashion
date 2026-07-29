@@ -399,6 +399,29 @@ body:not(.gate-locked) .hmf-gate{display:none}
     <div id="bundleCount" class="note"></div>
     <div class="products" id="bundleList"></div>
   </section>
+
+  <section class="card" style="margin-top:18px;">
+    <h2>Coupon Generator</h2>
+    <div class="note">Create a percent-off code to send to a customer or use in a social media ad. Customers type it into the discount field on the checkout page. Powered directly by Stripe — no separate database.</div>
+
+    <div class="row3">
+      <div><label>Percent Off</label><input id="couponPercent" type="number" min="1" max="100" step="1" placeholder="20"/></div>
+      <div><label>Custom Code (optional)</label><input id="couponCode" placeholder="Leave blank to auto-generate"/></div>
+      <div><label>Max Uses (optional)</label><input id="couponMaxUses" type="number" min="1" step="1" placeholder="Unlimited"/></div>
+    </div>
+    <div class="row">
+      <div><label>Expires On (optional)</label><input id="couponExpires" type="date"/></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn gold" id="btnCreateCoupon" type="button">Generate Coupon</button>
+      <button class="btn" id="btnReloadCoupons" type="button">Reload List</button>
+    </div>
+    <div class="status" id="couponStatus"></div>
+
+    <div id="couponCount" class="note" style="margin-top:12px"></div>
+    <div class="products" id="couponList"></div>
+  </section>
 </div>
 
 <script>
@@ -1482,9 +1505,96 @@ document.getElementById("btnConvertToFiles").onclick=convertUploadedPhotosToFile
 document.getElementById("btnAddFitGroup").onclick=addFitGroup;
 document.getElementById("btnResetFitBuilder").onclick=resetFitBuilderInputs;
 
+/* ===== Coupon Generator (Stripe-backed) ===== */
+function couponSetStatus(m,bad=false){
+  let el=document.getElementById("couponStatus");
+  if(!el)return;
+  el.textContent=m;
+  el.style.cssText=m?(bad?"margin-top:10px;padding:12px 14px;border-radius:12px;background:rgba(255,107,107,.14);border:1px solid rgba(255,107,107,.45);color:#ff8585;font-weight:900":"margin-top:10px;padding:12px 14px;border-radius:12px;background:rgba(72,209,122,.14);border:1px solid rgba(72,209,122,.45);color:#65ef9a;font-weight:900"):"";
+  setTimeout(()=>{if(el.textContent===m){el.textContent="";el.style.cssText=""}},5000);
+}
+async function renderCoupons(){
+  const listEl=document.getElementById("couponList");
+  const countEl=document.getElementById("couponCount");
+  if(!listEl)return;
+  listEl.innerHTML='<div class="note">Loading…</div>';
+  try{
+    const data=await apiFetch("/api/coupons");
+    const codes=data.codes||[];
+    if(countEl)countEl.textContent=codes.length+" coupon"+(codes.length===1?"":"s");
+    if(!codes.length){listEl.innerHTML='<div class="note">No coupons yet — create one above.</div>';return}
+    listEl.innerHTML=codes.map(c=>{
+      const bits=[];
+      if(c.percentOff!=null)bits.push(c.percentOff+"% off");
+      if(!c.active)bits.push("Deactivated");
+      bits.push(c.maxRedemptions?(c.timesRedeemed+"/"+c.maxRedemptions+" used"):(c.timesRedeemed+" used"));
+      if(c.expiresAt)bits.push("Expires "+new Date(c.expiresAt).toLocaleDateString());
+      return `<div style="display:flex;justify-content:space-between;align-items:center;gap:14px;border:1px solid var(--line);border-radius:16px;padding:12px 14px;background:rgba(255,255,255,.035)">
+        <div>
+          <div style="font-weight:950;font-size:1.1em;letter-spacing:.5px">${esc(c.code)}</div>
+          <div class="meta" style="margin-top:2px">${esc(bits.join(" • "))}</div>
+        </div>
+        <div class="actions" style="margin:0">
+          <button class="btn" type="button" data-copy="${esc(c.code)}">Copy Code</button>
+          ${c.active?'<button class="btn red" type="button" data-deactivate="'+esc(c.id)+'">Deactivate</button>':''}
+        </div>
+      </div>`;
+    }).join("");
+    listEl.querySelectorAll("[data-copy]").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        const code=btn.getAttribute("data-copy");
+        (navigator.clipboard?navigator.clipboard.writeText(code):Promise.reject())
+          .then(()=>{const old=btn.textContent;btn.textContent="Copied!";setTimeout(()=>btn.textContent=old,1200)})
+          .catch(()=>alert("Coupon code: "+code));
+      });
+    });
+    listEl.querySelectorAll("[data-deactivate]").forEach(btn=>{
+      btn.addEventListener("click",async()=>{
+        if(!confirm("Deactivate this coupon? It can no longer be used at checkout."))return;
+        try{
+          await apiFetch("/api/coupons?id="+encodeURIComponent(btn.getAttribute("data-deactivate")),{method:"DELETE"});
+          renderCoupons();
+        }catch(e){alert("Could not deactivate: "+(e&&e.message?e.message:e))}
+      });
+    });
+  }catch(e){
+    listEl.innerHTML='<div class="note">Could not load coupons: '+esc(e&&e.message?e.message:String(e))+'</div>';
+  }
+}
+async function createCoupon(){
+  const percentEl=document.getElementById("couponPercent");
+  const percent=Number(percentEl.value);
+  if(!percent||percent<=0||percent>100){couponSetStatus("Enter a percent off between 1 and 100.",true);return}
+  const code=document.getElementById("couponCode").value.trim();
+  const maxUses=document.getElementById("couponMaxUses").value.trim();
+  const expires=document.getElementById("couponExpires").value;
+  const btn=document.getElementById("btnCreateCoupon");
+  btn.disabled=true;const oldText=btn.textContent;btn.textContent="Generating…";
+  try{
+    const data=await apiFetch("/api/coupons",{method:"POST",body:JSON.stringify({
+      percentOff:percent,
+      code:code||undefined,
+      maxRedemptions:maxUses||undefined,
+      expiresAt:expires||undefined
+    })});
+    couponSetStatus("Created code "+data.coupon.code+" — copy it below and send it out.");
+    document.getElementById("couponCode").value="";
+    document.getElementById("couponMaxUses").value="";
+    document.getElementById("couponExpires").value="";
+    percentEl.value="";
+    renderCoupons();
+  }catch(e){
+    couponSetStatus("Could not create coupon: "+(e&&e.message?e.message:e),true);
+  }finally{
+    btn.disabled=false;btn.textContent=oldText;
+  }
+}
+document.getElementById("btnCreateCoupon").onclick=createCoupon;
+document.getElementById("btnReloadCoupons").onclick=renderCoupons;
+
 makeGroups();renderAllChips();renderVariants();renderProducts();renderBundleProductChips();renderBundleList();renderAllFitBuilderChips();renderFitGroupList();
 renderFolderStatus();tryRestoreImagesFolder();
-renderAdminKeyStatus();loadLiveCatalog();
+renderAdminKeyStatus();loadLiveCatalog();renderCoupons();
 </script>
 </body>
 </html>

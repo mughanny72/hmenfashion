@@ -80,6 +80,7 @@ export default async function handler(req, res) {
       payment_method_types: ["card"],
       line_items,
       billing_address_collection: "auto",
+      allow_promotion_codes: true,
       shipping_address_collection: { allowed_countries: ["US"] },
       shipping_options: [
         {
