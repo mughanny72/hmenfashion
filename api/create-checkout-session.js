@@ -26,6 +26,7 @@ export default async function handler(req, res) {
     const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
     const cart = Array.isArray(body?.cart) ? body.cart : [];
     const shippingRate = body?.shippingRate || null;
+    const shippingAddress = body?.shippingAddress || null;
 
     if (!cart.length) return res.status(400).json({ ok: false, error: "Cart is empty" });
     if (cart.length > 100) return res.status(400).json({ ok: false, error: "Too many items" });
@@ -75,10 +76,39 @@ export default async function handler(req, res) {
       100
     ) || "Shipping";
 
+    // Create a lightweight guest Customer record carrying the shipping address
+    // the shopper already typed in on the cart page (see hmf-shipping.js). Passing
+    // this customer to Checkout lets Stripe pre-fill the shipping form so they
+    // don't have to type the same address twice.
+    let customerId;
+    if (shippingAddress?.street1 && shippingAddress?.city && shippingAddress?.state && shippingAddress?.zip) {
+      try {
+        const customerName = clean(shippingAddress.name, 120) || "Customer";
+        const customer = await stripe.customers.create({
+          name: customerName,
+          shipping: {
+            name: customerName,
+            address: {
+              line1: clean(shippingAddress.street1, 120),
+              line2: clean(shippingAddress.street2, 120) || undefined,
+              city: clean(shippingAddress.city, 80),
+              state: clean(shippingAddress.state, 40),
+              postal_code: clean(shippingAddress.zip, 20),
+              country: "US"
+            }
+          }
+        });
+        customerId = customer.id;
+      } catch (custErr) {
+        console.error("Could not pre-create Stripe customer (continuing without prefill):", custErr);
+      }
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
       line_items,
+      ...(customerId ? { customer: customerId } : {}),
       billing_address_collection: "auto",
       allow_promotion_codes: true,
       shipping_address_collection: { allowed_countries: ["US"] },
