@@ -32,12 +32,12 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "GET") {
-      const list = await stripe.promotionCodes.list({ limit: 100 });
+      const list = await stripe.promotionCodes.list({ limit: 100, expand: ["data.promotion.coupon"] });
       const codes = list.data.map((pc) => ({
         id: pc.id,
         code: pc.code,
         active: pc.active,
-        percentOff: pc.coupon?.percent_off ?? null,
+        percentOff: pc.promotion?.coupon?.percent_off ?? null,
         timesRedeemed: pc.times_redeemed,
         maxRedemptions: pc.max_redemptions,
         expiresAt: pc.expires_at ? new Date(pc.expires_at * 1000).toISOString() : null,
@@ -75,7 +75,7 @@ export default async function handler(req, res) {
       });
 
       const promoParams = {
-        coupon: coupon.id,
+        promotion: { type: "coupon", coupon: coupon.id },
         code,
         active: true
       };
