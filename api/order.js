@@ -1,6 +1,9 @@
 // api/order.js
+//   GET /api/order?session_id=xxx  -> public, single order lookup (unchanged)
+//   GET /api/order                 -> admin-key required, lists recent paid orders from Stripe
 import { MongoClient } from "mongodb";
 import Stripe from "stripe";
+import requireAdmin from "../lib/adminAuth.js";
 
 // Cache DB connection across serverless calls
 let cached = global._mongoOrder;
@@ -39,14 +42,68 @@ export default async function handler(req, res) {
   // Basic CORS (safe for GET)
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-admin-key, Authorization");
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "GET") return res.status(405).json({ ok: false, error: "Method not allowed" });
 
   try {
     const session_id = s(req.query.session_id).trim();
+
+    // No session_id -> admin order list, pulled live from Stripe (Checkout Sessions).
     if (!session_id) {
-      return res.status(400).json({ ok: false, error: "Missing session_id" });
+      if (!requireAdmin(req, res)) return;
+      if (!process.env.STRIPE_SECRET_KEY) {
+        return res.status(500).json({ ok: false, error: "Missing STRIPE_SECRET_KEY" });
+      }
+
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2024-06-20" });
+      const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
+      const startingAfter = req.query.starting_after ? s(req.query.starting_after) : undefined;
+
+      const list = await stripe.checkout.sessions.list({
+        limit,
+        starting_after: startingAfter,
+        status: "complete",
+      });
+
+      const orders = [];
+      for (const session of list.data) {
+        if (session.mode !== "payment") continue; // skip subscription sessions
+
+        let items = [];
+        try {
+          const li = await stripe.checkout.sessions.listLineItems(session.id, { limit: 100 });
+          items = (li.data || []).map((it) => ({
+            description: s(it.description),
+            quantity: it.quantity || 1,
+            amount: it.amount_total || 0,
+          }));
+        } catch (_) {}
+
+        const cd = session.customer_details || {};
+        const sd = session.shipping_details || {};
+
+        orders.push({
+          id: session.id,
+          created: new Date(session.created * 1000).toISOString(),
+          email: lower(cd.email),
+          phone: s(cd.phone),
+          name: s(sd.name || cd.name),
+          address: sd.address || null,
+          amountTotal: session.amount_total || 0,
+          amountShipping: session.total_details?.amount_shipping ?? null,
+          currency: lower(session.currency || "usd"),
+          paymentIntent: typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id || null,
+          items,
+        });
+      }
+
+      return res.status(200).json({
+        ok: true,
+        orders,
+        hasMore: list.has_more,
+        nextCursor: list.data.length ? list.data[list.data.length - 1].id : null,
+      });
     }
 
     const db = await getDb();

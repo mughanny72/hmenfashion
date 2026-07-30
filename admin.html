@@ -422,6 +422,22 @@ body:not(.gate-locked) .hmf-gate{display:none}
     <div id="couponCount" class="note" style="margin-top:12px"></div>
     <div class="products" id="couponList"></div>
   </section>
+
+  <section class="card" style="margin-top:18px;">
+    <h2>Orders</h2>
+    <div class="note">Recent paid orders, pulled live from Stripe — this is the same data as your Stripe Dashboard, just easier to browse. To issue a refund, click "Open in Stripe" on the order.</div>
+
+    <div class="actions">
+      <button class="btn" id="btnReloadOrders" type="button">Reload</button>
+    </div>
+    <div class="status" id="orderStatus"></div>
+
+    <div id="orderCount" class="note" style="margin-top:12px"></div>
+    <div class="products" id="orderList"></div>
+    <div class="actions" style="margin-top:12px">
+      <button class="btn" id="btnLoadMoreOrders" type="button" style="display:none">Load More</button>
+    </div>
+  </section>
 </div>
 
 <script>
@@ -1592,9 +1608,83 @@ async function createCoupon(){
 document.getElementById("btnCreateCoupon").onclick=createCoupon;
 document.getElementById("btnReloadCoupons").onclick=renderCoupons;
 
+/* ===== Orders (live from Stripe) ===== */
+let orderNextCursor=null;
+function orderSetStatus(m,bad=false){
+  let el=document.getElementById("orderStatus");
+  if(!el)return;
+  el.textContent=m;
+  el.style.cssText=m?(bad?"margin-top:10px;padding:12px 14px;border-radius:12px;background:rgba(255,107,107,.14);border:1px solid rgba(255,107,107,.45);color:#ff8585;font-weight:900":"margin-top:10px;padding:12px 14px;border-radius:12px;background:rgba(72,209,122,.14);border:1px solid rgba(72,209,122,.45);color:#65ef9a;font-weight:900"):"";
+  setTimeout(()=>{if(el.textContent===m){el.textContent="";el.style.cssText=""}},5000);
+}
+function renderOrderRows(orders,append){
+  const listEl=document.getElementById("orderList");
+  const rowsHtml=orders.map(o=>{
+    const addr=o.address;
+    const addrLine=addr?[addr.line1,addr.line2,[addr.city,addr.state,addr.postal_code].filter(Boolean).join(", ")].filter(Boolean).join(" • "):"";
+    const itemsHtml=(o.items||[]).map(it=>`${esc(it.description)} × ${it.quantity} — ${money(it.amount/100)}`).join("<br>");
+    const when=o.created?new Date(o.created).toLocaleString():"";
+    return `<div style="border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:rgba(255,255,255,.035)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
+        <div>
+          <div style="font-weight:950;font-size:1.05em">${esc(o.name||"Customer")}</div>
+          <div class="meta" style="margin-top:2px">${esc(o.email||"")}${o.phone?" • "+esc(o.phone):""}</div>
+          <div class="meta" style="margin-top:2px">${when}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-weight:950;font-size:1.1em">${money(o.amountTotal/100)}</div>
+          ${o.amountShipping!=null?`<div class="meta">incl. ${money(o.amountShipping/100)} shipping</div>`:""}
+        </div>
+      </div>
+      ${addrLine?`<div class="meta" style="margin-top:8px">Ship to: ${esc(addrLine)}</div>`:""}
+      ${itemsHtml?`<div class="meta" style="margin-top:8px;line-height:1.6">${itemsHtml}</div>`:""}
+      <div class="actions" style="margin-top:10px">
+        ${o.paymentIntent?`<a class="btn" href="https://dashboard.stripe.com/payments/${encodeURIComponent(o.paymentIntent)}" target="_blank" rel="noopener">Open in Stripe</a>`:""}
+      </div>
+    </div>`;
+  }).join("");
+  if(append) listEl.insertAdjacentHTML("beforeend",rowsHtml);
+  else listEl.innerHTML=rowsHtml||'<div class="note">No orders yet.</div>';
+}
+async function renderOrders(){
+  const listEl=document.getElementById("orderList");
+  const moreBtn=document.getElementById("btnLoadMoreOrders");
+  if(!listEl)return;
+  listEl.innerHTML='<div class="note">Loading…</div>';
+  moreBtn.style.display="none";
+  orderNextCursor=null;
+  try{
+    const data=await apiFetch("/api/order?limit=20");
+    const orders=data.orders||[];
+    document.getElementById("orderCount").textContent=orders.length+" order"+(orders.length===1?"":"s")+(data.hasMore?" (more available)":"");
+    renderOrderRows(orders,false);
+    if(data.hasMore && data.nextCursor){orderNextCursor=data.nextCursor;moreBtn.style.display="inline-block"}
+  }catch(e){
+    listEl.innerHTML='<div class="note">Could not load orders: '+esc(e&&e.message?e.message:String(e))+'</div>';
+  }
+}
+async function loadMoreOrders(){
+  if(!orderNextCursor)return;
+  const moreBtn=document.getElementById("btnLoadMoreOrders");
+  moreBtn.disabled=true;const oldText=moreBtn.textContent;moreBtn.textContent="Loading…";
+  try{
+    const data=await apiFetch("/api/order?limit=20&starting_after="+encodeURIComponent(orderNextCursor));
+    const orders=data.orders||[];
+    renderOrderRows(orders,true);
+    if(data.hasMore && data.nextCursor){orderNextCursor=data.nextCursor}
+    else{orderNextCursor=null;moreBtn.style.display="none"}
+  }catch(e){
+    orderSetStatus("Could not load more orders: "+(e&&e.message?e.message:e),true);
+  }finally{
+    moreBtn.disabled=false;moreBtn.textContent=oldText;
+  }
+}
+document.getElementById("btnReloadOrders").onclick=renderOrders;
+document.getElementById("btnLoadMoreOrders").onclick=loadMoreOrders;
+
 makeGroups();renderAllChips();renderVariants();renderProducts();renderBundleProductChips();renderBundleList();renderAllFitBuilderChips();renderFitGroupList();
 renderFolderStatus();tryRestoreImagesFolder();
-renderAdminKeyStatus();loadLiveCatalog();renderCoupons();
+renderAdminKeyStatus();loadLiveCatalog();renderCoupons();renderOrders();
 </script>
 </body>
 </html>
