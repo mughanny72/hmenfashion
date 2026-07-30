@@ -162,8 +162,33 @@
     });
   }
 
+  function clearSavedShipping() {
+    localStorage.removeItem(SHIP_ADDR_KEY);
+    localStorage.removeItem(SHIP_RATE_KEY);
+    ["shipName", "shipStreet1", "shipStreet2", "shipCity", "shipState", "shipZip"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.value = "";
+    });
+    const listEl = document.getElementById("shipRatesList");
+    if (listEl) listEl.innerHTML = "";
+    setHint("");
+    setCheckoutEnabled(false);
+  }
+
+  function watchClearCartButton() {
+    // The cart's own "Clear" button lives outside this widget (wired in app.js).
+    // Hook it here too so clearing the cart also resets the shipping step.
+    if (window.__HMF_SHIP_CLEAR_WIRED__) return;
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest && e.target.closest("#btnClearCart");
+      if (btn) setTimeout(clearSavedShipping, 0);
+    });
+    window.__HMF_SHIP_CLEAR_WIRED__ = true;
+  }
+
   function init() {
     injectWidget();
+    watchClearCartButton();
     // Cart re-renders periodically elsewhere; keep the widget present.
     setInterval(injectWidget, 1000);
   }
